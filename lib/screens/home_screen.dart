@@ -392,7 +392,7 @@ class _SmartTollCarPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final double carHeight = size.height * 0.6;
 
-    // 🌈 Hiệu ứng mờ phía sau xe
+    // Hiệu ứng mờ phía sau xe
     final blurPaint = Paint()
       ..shader = const LinearGradient(
         colors: [Color(0xFF00BFA5), Color(0xFF81C784), Color(0xFFFFFFFF)],
@@ -411,7 +411,7 @@ class _SmartTollCarPainter extends CustomPainter {
       ..close();
     canvas.drawPath(blurPath, blurPaint);
 
-    // 🚘 Thân xe
+    // Thân xe
     final bodyPaint = Paint()
       ..shader = const LinearGradient(
         colors: [Color(0xFF00A86B), Color(0xFFFFA726)],
@@ -431,7 +431,7 @@ class _SmartTollCarPainter extends CustomPainter {
     canvas.drawShadow(body, Colors.black.withOpacity(0.2), 4, true);
     canvas.drawPath(body, bodyPaint);
 
-    // 🪟 Kính xe
+    // Kính xe
     final windowPaint = Paint()
       ..shader = const LinearGradient(
         colors: [Color(0xFFB2EBF2), Color(0xFFE0F7FA)],
@@ -447,7 +447,7 @@ class _SmartTollCarPainter extends CustomPainter {
       ..close();
     canvas.drawPath(window, windowPaint);
 
-    // 🚗 Bánh xe
+    // Bánh xe
     final wheelPaint = Paint()..color = Colors.black87;
     final wheelInner = Paint()..color = Colors.white;
     for (final x in [size.width * 0.28, size.width * 0.75]) {
@@ -455,14 +455,14 @@ class _SmartTollCarPainter extends CustomPainter {
       canvas.drawCircle(Offset(x, size.height * 0.63), 3, wheelInner);
     }
 
-    // 💡 Đèn xe
+    // Đèn xe
     final lightPaint = Paint()..color = Colors.yellowAccent;
     canvas.drawCircle(
         Offset(size.width * 0.12, size.height * 0.47), 3.5, lightPaint);
     canvas.drawCircle(
         Offset(size.width * 0.87, size.height * 0.47), 3.5, lightPaint);
 
-    // 📶 Sóng tín hiệu
+    // Sóng tín hiệu
     final signalPaint = Paint()
       ..color = Colors.white
       ..strokeWidth = 1.3
@@ -480,7 +480,7 @@ class _SmartTollCarPainter extends CustomPainter {
       );
     }
 
-    // 🅿️ Logo chữ “SmartToll”
+    // Logo chữ “SmartToll”
     final textPainter = TextPainter(
       text: const TextSpan(
         text: "SmartToll",

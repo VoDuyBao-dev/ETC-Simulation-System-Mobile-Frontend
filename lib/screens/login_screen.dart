@@ -11,14 +11,14 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _accountController = TextEditingController();
-  final TextEditingController _otpController = TextEditingController();
-  bool _isLoading = false;
-  bool _isOtpVisible = false; // 👉 Hiện form nhập OTP hay không
+  final TextEditingController _passwordController = TextEditingController();
 
-  // 🟢 B1: Gửi yêu cầu login để nhận OTP
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+
   Future<void> _login() async {
-    if (_accountController.text.isEmpty) {
-      _showError('Vui lòng nhập Email hoặc tài khoản');
+    if (_accountController.text.isEmpty || _passwordController.text.isEmpty) {
+      _showError('Vui lòng nhập đầy đủ thông tin');
       return;
     }
 
@@ -27,47 +27,9 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final response = await http.post(
         Uri.parse('http://10.0.2.2/smarttoll/api/login.php'),
-        body: {'account': _accountController.text},
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        if (data['success'] == true) {
-          // 👉 Server gửi OTP đến email / điện thoại
-          setState(() => _isOtpVisible = true);
-          _showError('Vui lòng nhập mã OTP được gửi tới tài khoản');
-
-          // ✅ CHỈ THÊM DÒNG NÀY: mở sang trang OTP
-          Navigator.pushNamed(context, '/otp');
-        } else {
-          _showError(data['message'] ?? 'Sai thông tin đăng nhập');
-        }
-      } else {
-        _showError('Lỗi máy chủ: ${response.statusCode}');
-      }
-    } catch (e) {
-      _showError('Không thể kết nối tới máy chủ');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  // 🟢 B2: Xác minh OTP
-  Future<void> _verifyOtp() async {
-    if (_otpController.text.isEmpty) {
-      _showError('Vui lòng nhập mã OTP');
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      final response = await http.post(
-        Uri.parse('http://10.0.2.2/smarttoll/api/verify_otp.php'),
         body: {
           'account': _accountController.text,
-          'otp': _otpController.text,
+          'password': _passwordController.text,
         },
       );
 
@@ -76,15 +38,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (data['success'] == true) {
           if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Đăng nhập thành công!')),
+          );
           Navigator.pushReplacementNamed(context, '/home');
         } else {
-          _showError(data['message'] ?? 'Mã OTP không đúng');
+          _showError(data['message'] ?? 'Sai tài khoản hoặc mật khẩu');
         }
       } else {
         _showError('Lỗi máy chủ: ${response.statusCode}');
       }
     } catch (e) {
-      _showError('Không thể xác minh OTP');
+      _showError('Không thể kết nối tới máy chủ');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -107,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Logo
+                // 🅿️ Logo
                 Container(
                   width: 100,
                   height: 100,
@@ -124,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 30),
 
                 const Text(
-                  'SmartToll xin chào!',
+                  'Đăng nhập SmartToll',
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
@@ -133,72 +98,80 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 30),
 
-                if (!_isOtpVisible) ...[
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Nhập Email hoặc Tài khoản thu phí',
-                      style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                // 🧑‍💻 Tài khoản / email
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Tài khoản hoặc Email',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _accountController,
+                  keyboardType: TextInputType.text,
+                  decoration: InputDecoration(
+                    hintText: 'Nhập tài khoản hoặc email',
+                    prefixIcon: const Icon(Icons.person_outline),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _accountController,
-                    keyboardType: TextInputType.text,
-                    decoration: InputDecoration(
-                      hintText: 'Nhập Email hoặc TK thu phí',
-                      prefixIcon: const Icon(Icons.person_outline),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // 🔒 Mật khẩu
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Mật khẩu',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    hintText: 'Nhập mật khẩu',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () {
+                        setState(() => _obscurePassword = !_obscurePassword);
+                      },
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                ] else ...[
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Nhập mã OTP được gửi tới tài khoản',
-                      style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _otpController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: 'Nhập mã OTP',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
 
                 const SizedBox(height: 30),
 
                 _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const CircularProgressIndicator()
                     : SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _isOtpVisible ? _verifyOtp : _login,
+                    onPressed: _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green[700],
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Text(
-                      _isOtpVisible ? 'Xác minh OTP' : 'Đăng nhập',
-                      style: const TextStyle(
+                    child: const Text(
+                      'Đăng nhập',
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -209,21 +182,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
-                if (!_isOtpVisible)
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/register');
-                    },
-                    child: const Text(
-                      "Chưa có tài khoản? Đăng ký ngay",
-                      style: TextStyle(
-                        fontSize: 15,
-                        decoration: TextDecoration.underline,
-                        color: Colors.blueAccent,
-                        fontWeight: FontWeight.w500,
-                      ),
+                // 🔗 Chuyển đến trang đăng ký
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/register');
+                  },
+                  child: const Text(
+                    "Chưa có tài khoản? Đăng ký ngay",
+                    style: TextStyle(
+                      fontSize: 15,
+                      decoration: TextDecoration.underline,
+                      color: Colors.blueAccent,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
+                ),
               ],
             ),
           ),
