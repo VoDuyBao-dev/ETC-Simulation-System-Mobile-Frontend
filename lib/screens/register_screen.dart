@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter/scheduler.dart';
+import 'dart:async'; // để dùng Future.delayed
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -23,35 +23,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    try {
-      // 🌐 API mẫu — bạn thay URL này bằng API thật
-      final res = await http.post(
-        Uri.parse("https://example.com/api/register.php"),
-        body: {
-          "email": _emailController.text,
-          "password": _passwordController.text,
-        },
-      );
+    // ⏳ Giả lập xử lý đăng ký (API giả)
+    await Future.delayed(const Duration(seconds: 1));
 
-      final data = jsonDecode(res.body);
-
-      if (data["success"] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Đăng ký thành công!")),
-        );
-        Navigator.pushReplacementNamed(context, '/login');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "Đăng ký thất bại")),
-        );
-      }
-    } catch (e) {
+    if (!mounted) return;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi kết nối: $e")),
+        const SnackBar(
+          content: Text("Đăng ký thành công! Chuyển sang xác minh OTP..."),
+        ),
       );
-    } finally {
-      setState(() => _isLoading = false);
-    }
+
+      // 🔁 Chuyển sang trang OTP, truyền email để hiển thị
+      Navigator.pushReplacementNamed(
+        context,
+        '/otp',
+        arguments: _emailController.text,
+      );
+    });
+
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -77,7 +68,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 25),
 
-                // 📧 Email
+                // Email
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
@@ -92,7 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // 🔑 Mật khẩu
+                // Mật khẩu
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePass,
@@ -119,7 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // 🔁 Nhập lại mật khẩu
+                // Xác nhận mật khẩu
                 TextFormField(
                   controller: _confirmController,
                   obscureText: _obscureConfirm,
@@ -146,7 +137,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // 🚀 Nút đăng ký
+                // Nút đăng ký
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -167,10 +158,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
 
-                // 🔁 Quay lại đăng nhập
+                // Đăng nhập
                 TextButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/login');
