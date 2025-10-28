@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
-import 'screens/otp_screen.dart'; // ✅ Thêm màn hình OTP
+import 'screens/otp_screen.dart';
 
 void main() {
   runApp(const SmartTollApp());
@@ -15,21 +15,17 @@ class SmartTollApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'SmartToll App', // ✅ Tên app
+      title: 'SmartToll App',
       theme: ThemeData(
         primarySwatch: Colors.green,
         scaffoldBackgroundColor: Colors.grey[100],
       ),
-
-      // ✅ Trang đầu tiên khi mở app
-      home: const HomeScreen(),
-
-      // ✅ Danh sách route (đường dẫn đến các trang)
+      home: const HomeScreen(), //
       routes: {
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/otp': (context) => const OtpScreen(), // ✅ Thêm route OTP
+        '/otp': (context) => const OtpScreen(),
       },
     );
   }
