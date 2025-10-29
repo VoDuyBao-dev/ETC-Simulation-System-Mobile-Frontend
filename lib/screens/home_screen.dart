@@ -122,7 +122,9 @@ class HomeScreen extends StatelessWidget {
                   }),
                   _menuItem(Icons.confirmation_num, "Mua vé tháng"),
                   _menuItem(Icons.link, "Liên kết\nngân hàng", isNew: true),
-                  _menuItem(Icons.directions_car, "Quản lý xe"),
+                  _menuItem(Icons.directions_car, "Quản lý xe", onTap: () {
+                    Navigator.pushNamed(context, '/vehicle');
+                  }),
                   _menuItem(Icons.shield, "Bảo hiểm\nTNDS", isNew: true),
                   _menuItem(Icons.emergency, "Cứu hộ\ntoàn quốc", isNew: true),
                   _menuItem(Icons.card_giftcard, "Smart Loyalty", isNew: true),
