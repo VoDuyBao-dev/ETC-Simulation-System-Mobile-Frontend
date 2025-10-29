@@ -3,6 +3,7 @@ import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/otp_screen.dart'; // ✅ Thêm màn hình OTP
+import 'screens/recharge_screen.dart';
 
 void main() {
   runApp(const SmartTollApp());
@@ -30,6 +31,7 @@ class SmartTollApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/otp': (context) => const OtpScreen(), // ✅ Thêm route OTP
+        '/recharge': (context) => const RechargeScreen(),
       },
     );
   }
