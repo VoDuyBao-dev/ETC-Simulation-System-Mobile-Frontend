@@ -1,7 +1,38 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart'; //
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<dynamic> _services = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServices();
+  }
+
+  Future<void> _loadServices() async {
+    try {
+      final data = await ApiService.fetchHomeServices();
+      setState(() {
+        _services = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +58,11 @@ class HomeScreen extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  // Nút menu
                   const Positioned(
                     top: 40,
                     left: 16,
                     child: Icon(Icons.menu, color: Colors.white, size: 32),
                   ),
-
-                  // 🔹 Nút Đăng nhập
                   Positioned(
                     top: 40,
                     right: 16,
@@ -61,8 +89,6 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  // Nội dung banner
                   Positioned(
                     top: 80,
                     left: 16,
@@ -90,7 +116,7 @@ class HomeScreen extends StatelessWidget {
                     child: Icon(
                       Icons.directions_car_filled,
                       size: 80,
-                      color: Colors.white.withValues(alpha: 0.25),
+                      color: Colors.white.withOpacity(0.25),
                     ),
                   ),
                 ],
@@ -106,7 +132,7 @@ class HomeScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black12.withValues(alpha: 0.1),
+                    color: Colors.black12.withOpacity(0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -129,14 +155,14 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-            // ===================== LOGO & KHẨU HIỆU =====================
+            // ===================== LOGO SMARTTOLL =====================
             Padding(
               padding: const EdgeInsets.only(top: 4, bottom: 12),
               child: Column(
                 children: [
                   SizedBox(
-                    width: 100,
-                    height: 60,
+                    width: 120,
+                    height: 70,
                     child: CustomPaint(
                       painter: _SmartTollCarPainter(),
                     ),
@@ -154,7 +180,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-            // ===================== QUẢNG CÁO DẠNG SLIDE =====================
+            // ===================== QUẢNG CÁO =====================
             SizedBox(
               height: 190,
               child: ListView(
@@ -195,7 +221,7 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 25),
 
-            // ===================== GIỚI THIỆU GÓI DỊCH VỤ =====================
+            // ===================== DỊCH VỤ API =====================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -209,30 +235,22 @@ class HomeScreen extends StatelessWidget {
                         color: Colors.black87),
                   ),
                   const SizedBox(height: 12),
-                  _serviceCard(
-                    title: "Gói SmartToll Cơ Bản",
-                    desc: "Dành cho cá nhân, bao gồm nạp tiền và quản lý xe.",
-                    color: Colors.blueAccent,
-                    icon: Icons.account_balance_wallet,
-                  ),
-                  _serviceCard(
-                    title: "Gói Premium 24/7",
-                    desc:
-                    "Cứu hộ toàn quốc, hỗ trợ kỹ thuật và bảo hiểm TNDS tích hợp.",
-                    color: Colors.teal,
-                    icon: Icons.workspace_premium_rounded,
-                  ),
-                  _serviceCard(
-                    title: "Gói Doanh Nghiệp",
-                    desc:
-                    "Quản lý đội xe lớn, xuất hóa đơn định kỳ và dịch vụ hỗ trợ riêng.",
-                    color: Colors.deepPurple,
-                    icon: Icons.business_center,
-                  ),
+                  if (_isLoading)
+                    const Center(child: CircularProgressIndicator()),
+                  if (_error != null)
+                    Text('Lỗi tải dữ liệu: $_error',
+                        style: const TextStyle(color: Colors.red)),
+                  if (!_isLoading && _error == null)
+                    for (var s in _services)
+                      _serviceCard(
+                        title: s['title'] ?? 'Chưa có tên',
+                        desc: s['desc'] ?? 'Không có mô tả',
+                        color: Colors.teal,
+                        icon: Icons.workspace_premium_rounded,
+                      ),
                 ],
               ),
             ),
-
             const SizedBox(height: 50),
           ],
         ),
@@ -312,7 +330,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color1.withValues(alpha: 0.25),
+            color: color1.withOpacity(0.25),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -324,7 +342,7 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
-              backgroundColor: Colors.white.withValues(alpha: 0.9),
+              backgroundColor: Colors.white.withOpacity(0.9),
               child: Icon(icon, color: color1, size: 24),
             ),
             const Spacer(),
@@ -363,7 +381,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12.withValues(alpha: 0.05),
+            color: Colors.black12.withOpacity(0.05),
             blurRadius: 5,
             offset: const Offset(0, 3),
           ),
@@ -371,7 +389,7 @@ class HomeScreen extends StatelessWidget {
       ),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.15),
+          backgroundColor: color.withOpacity(0.15),
           child: Icon(icon, color: color),
         ),
         title: Text(
@@ -386,118 +404,115 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// ===================== XE SMARTTOLL LOGO =====================
+// ===================== XE SMARTTOLL CÂN ĐỐI - RÕ NÉT =====================
 class _SmartTollCarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final double carHeight = size.height * 0.6;
+    final scale = 1.5;
+    final scaledWidth = size.width * scale;
+    final scaledHeight = size.height * 0.9;
+    final dx = (size.width - scaledWidth) / 2;
+    final dy = (size.height - scaledHeight) / 2;
 
-    // Hiệu ứng mờ phía sau xe
-    final blurPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF00BFA5), Color(0xFF81C784), Color(0xFFFFFFFF)],
-        stops: [0.0, 0.4, 1.0],
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-      ).createShader(Rect.fromLTWH(0, 0, size.width, carHeight))
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8)
-      ..style = PaintingStyle.fill;
-
-    final blurPath = Path()
-      ..moveTo(size.width * 0.1, carHeight)
-      ..lineTo(size.width * 0.9, carHeight)
-      ..lineTo(size.width * 0.9, carHeight * 0.4)
-      ..lineTo(size.width * 0.1, carHeight * 0.4)
-      ..close();
-    canvas.drawPath(blurPath, blurPaint);
-
-    // Thân xe
+    // --- Thân xe ---
     final bodyPaint = Paint()
       ..shader = const LinearGradient(
-        colors: [Color(0xFF00A86B), Color(0xFFFFA726)],
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-      ).createShader(Rect.fromLTWH(0, 0, size.width, carHeight))
-      ..style = PaintingStyle.fill;
-
-    final body = Path()
-      ..moveTo(size.width * 0.1, carHeight)
-      ..quadraticBezierTo(
-          size.width * 0.15, carHeight * 0.25, size.width * 0.4, carHeight * 0.25)
-      ..lineTo(size.width * 0.8, carHeight * 0.25)
-      ..quadraticBezierTo(
-          size.width * 0.95, carHeight * 0.3, size.width * 0.9, carHeight)
-      ..close();
-    canvas.drawShadow(body, Colors.black.withOpacity(0.2), 4, true);
-    canvas.drawPath(body, bodyPaint);
-
-    // Kính xe
-    final windowPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFFB2EBF2), Color(0xFFE0F7FA)],
+        colors: [Color(0xFF0066FF), Color(0xFF00CCFF)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-      ).createShader(Rect.fromLTWH(0, 0, size.width, carHeight))
+      ).createShader(Rect.fromLTWH(dx, dy, scaledWidth, scaledHeight))
       ..style = PaintingStyle.fill;
-    final window = Path()
-      ..moveTo(size.width * 0.25, carHeight * 0.35)
-      ..lineTo(size.width * 0.55, carHeight * 0.35)
-      ..lineTo(size.width * 0.5, carHeight * 0.55)
-      ..lineTo(size.width * 0.3, carHeight * 0.55)
+
+    final bodyPath = Path()
+      ..moveTo(dx + scaledWidth * 0.05, dy + scaledHeight * 0.65)
+      ..quadraticBezierTo(dx + scaledWidth * 0.25, dy + scaledHeight * 0.2,
+          dx + scaledWidth * 0.55, dy + scaledHeight * 0.2)
+      ..quadraticBezierTo(dx + scaledWidth * 0.93, dy + scaledHeight * 0.35,
+          dx + scaledWidth * 0.93, dy + scaledHeight * 0.65)
+      ..quadraticBezierTo(dx + scaledWidth * 0.85, dy + scaledHeight * 0.85,
+          dx + scaledWidth * 0.12, dy + scaledHeight * 0.85)
+      ..quadraticBezierTo(dx + scaledWidth * 0.03, dy + scaledHeight * 0.72,
+          dx + scaledWidth * 0.05, dy + scaledHeight * 0.65)
       ..close();
-    canvas.drawPath(window, windowPaint);
 
-    // Bánh xe
-    final wheelPaint = Paint()..color = Colors.black87;
-    final wheelInner = Paint()..color = Colors.white;
-    for (final x in [size.width * 0.28, size.width * 0.75]) {
-      canvas.drawCircle(Offset(x, size.height * 0.63), 7, wheelPaint);
-      canvas.drawCircle(Offset(x, size.height * 0.63), 3, wheelInner);
-    }
+    canvas.drawPath(bodyPath, bodyPaint);
 
-    // Đèn xe
+    // --- Viền xe ---
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5;
+    canvas.drawPath(bodyPath, borderPaint);
+
+    // --- Cửa sổ ---
+    final windowPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Colors.white, Colors.lightBlueAccent],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromLTWH(dx, dy, scaledWidth, scaledHeight));
+
+    final windowPath = Path()
+      ..moveTo(dx + scaledWidth * 0.23, dy + scaledHeight * 0.32)
+      ..quadraticBezierTo(dx + scaledWidth * 0.55, dy + scaledHeight * 0.18,
+          dx + scaledWidth * 0.75, dy + scaledHeight * 0.32)
+      ..lineTo(dx + scaledWidth * 0.75, dy + scaledHeight * 0.5)
+      ..lineTo(dx + scaledWidth * 0.23, dy + scaledHeight * 0.5)
+      ..close();
+    canvas.drawPath(windowPath, windowPaint);
+
+    // --- Bánh xe ---
+    final wheelPaint = Paint()..color = Colors.black;
+    final rimPaint = Paint()
+      ..color = Colors.cyanAccent
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    const wheelRadius = 12.0;
+    canvas.drawCircle(
+        Offset(dx + scaledWidth * 0.25, dy + scaledHeight * 0.87),
+        wheelRadius,
+        wheelPaint);
+    canvas.drawCircle(
+        Offset(dx + scaledWidth * 0.25, dy + scaledHeight * 0.87),
+        wheelRadius,
+        rimPaint);
+
+    canvas.drawCircle(
+        Offset(dx + scaledWidth * 0.7, dy + scaledHeight * 0.87),
+        wheelRadius,
+        wheelPaint);
+    canvas.drawCircle(
+        Offset(dx + scaledWidth * 0.7, dy + scaledHeight * 0.87),
+        wheelRadius,
+        rimPaint);
+
+    // --- Đèn xe ---
     final lightPaint = Paint()..color = Colors.yellowAccent;
     canvas.drawCircle(
-        Offset(size.width * 0.12, size.height * 0.47), 3.5, lightPaint);
-    canvas.drawCircle(
-        Offset(size.width * 0.87, size.height * 0.47), 3.5, lightPaint);
+        Offset(dx + scaledWidth * 0.94, dy + scaledHeight * 0.58), 7, lightPaint);
 
-    // Sóng tín hiệu
-    final signalPaint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 1.3
-      ..style = PaintingStyle.stroke;
-    for (int i = 0; i < 2; i++) {
-      canvas.drawArc(
-        Rect.fromCircle(
-          center: Offset(size.width * 0.93, size.height * 0.42),
-          radius: 6 + i * 4,
-        ),
-        -1.0,
-        1.7,
-        false,
-        signalPaint,
-      );
-    }
-
-    // Logo chữ “SmartToll”
+    // --- Chữ SmartToll rõ nét ---
     final textPainter = TextPainter(
-      text: const TextSpan(
+      text: TextSpan(
         text: "SmartToll",
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 12,
+        style: const TextStyle(
+          fontSize: 24,
           fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
+          color: Colors.white,
+          shadows: [
+            Shadow(blurRadius: 3, color: Colors.black26, offset: Offset(0, 1)),
+          ],
         ),
       ),
       textDirection: TextDirection.ltr,
+    )..layout(maxWidth: scaledWidth);
+
+    final textOffset = Offset(
+      dx + (scaledWidth - textPainter.width) / 2,
+      dy + scaledHeight * 0.46 - textPainter.height / 2,
     );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset((size.width - textPainter.width) / 2, size.height * 0.36),
-    );
+    textPainter.paint(canvas, textOffset);
   }
 
   @override
