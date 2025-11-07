@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart'; // để gọi verifyOtp() nếu cần
+import '../services/api_service.dart';
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+  final String email;
+  const OtpScreen({super.key, required this.email});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -14,7 +15,7 @@ class _OtpScreenState extends State<OtpScreen> {
   bool _isLoading = false;
 
   // ===================== XÁC MINH OTP =====================
-  Future<void> _verifyOtp(String email) async {
+  Future<void> _verifyOtp() async {
     String otp = _otpControllers.map((c) => c.text).join();
 
     if (otp.length < 6) {
@@ -27,18 +28,13 @@ class _OtpScreenState extends State<OtpScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 🔹 Nếu có server thật, bạn dùng:
-      // final response = await ApiService.verifyOtp(email, otp);
-      // if (response['success']) { ... }
-
-      await Future.delayed(const Duration(seconds: 1)); // Giả lập chờ API
+      await Future.delayed(const Duration(seconds: 1)); // Giả lập API
       setState(() => _isLoading = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Xác minh OTP thành công!")),
       );
 
-      // Sau khi xác minh, quay về màn hình đăng nhập
       Navigator.pushReplacementNamed(context, '/login');
     } catch (e) {
       setState(() => _isLoading = false);
@@ -51,9 +47,7 @@ class _OtpScreenState extends State<OtpScreen> {
   // ===================== UI =====================
   @override
   Widget build(BuildContext context) {
-    final String email =
-        ModalRoute.of(context)?.settings.arguments as String? ??
-            'demo@example.com';
+    final String email = widget.email;
 
     return Scaffold(
       appBar: AppBar(
@@ -116,8 +110,8 @@ class _OtpScreenState extends State<OtpScreen> {
                             borderSide: const BorderSide(color: Colors.white),
                           ),
                         ),
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 20),
+                        style:
+                        const TextStyle(color: Colors.white, fontSize: 20),
                       ),
                     );
                   }),
@@ -125,7 +119,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
                 const SizedBox(height: 50),
                 ElevatedButton(
-                  onPressed: _isLoading ? null : () => _verifyOtp(email),
+                  onPressed: _isLoading ? null : _verifyOtp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(

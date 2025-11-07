@@ -20,12 +20,22 @@ class SmartTollApp extends StatelessWidget {
         primarySwatch: Colors.green,
         scaffoldBackgroundColor: Colors.grey[100],
       ),
-      home: const HomeScreen(), //
+      home: const HomeScreen(),
+
+      // ===================== ROUTES =====================
       routes: {
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/otp': (context) => const OtpScreen(),
+
+        // ✅ Sửa lại phần OTP: nhận tham số email qua arguments
+        '/otp': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments
+          as Map<String, dynamic>?;
+
+          final email = args?['email'] ?? 'demo@example.com';
+          return OtpScreen(email: email);
+        },
       },
     );
   }

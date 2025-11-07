@@ -61,12 +61,12 @@ class ApiService {
       if (email == 'test@gmail.com' && password == '123456') {
         return {
           'success': true,
-          'message': 'Đăng nhập thành công (mô phỏng)',
+          'message': 'Đăng nhập thành công',
         };
       } else {
         return {
           'success': false,
-          'message': 'Tài khoản hoặc mật khẩu không đúng (mô phỏng)',
+          'message': 'Tài khoản hoặc mật khẩu không đúng',
         };
       }
     } catch (e) {
