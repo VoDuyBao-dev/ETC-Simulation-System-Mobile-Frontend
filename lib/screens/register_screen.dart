@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'dart:async';
-import '../services/api_service.dart'; //  gọi API
+import '../services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -41,16 +41,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() => _isLoading = false);
 
       if (response['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Đăng ký thành công!")),
-        );
+        // ❌ Không hiển thị snackbar “Đăng ký thành công!”
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(content: Text("Đăng ký thành công!")),
+        // );
 
-        // Sau khi đăng ký, chuyển sang màn hình OTP
+        // ✅ Chuyển thẳng sang màn hình OTP, truyền email qua arguments
         SchedulerBinding.instance.addPostFrameCallback((_) {
           Navigator.pushReplacementNamed(
             context,
             '/otp',
-            arguments: _emailController.text,
+            arguments: {'email': _emailController.text},
           );
         });
       } else {
@@ -99,14 +100,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   _buildTextField("Email", Icons.email_outlined, _emailController),
                   const SizedBox(height: 16),
                   _buildPasswordField(
-                      "Mật khẩu", _passwordController, _obscurePass, (v) {
-                    setState(() => _obscurePass = v);
-                  }),
+                    "Mật khẩu",
+                    _passwordController,
+                    _obscurePass,
+                        (v) {
+                      setState(() => _obscurePass = v);
+                    },
+                  ),
                   const SizedBox(height: 16),
-                  _buildPasswordField("Xác nhận mật khẩu", _confirmController,
-                      _obscureConfirm, (v) {
-                        setState(() => _obscureConfirm = v);
-                      }),
+                  _buildPasswordField(
+                    "Xác nhận mật khẩu",
+                    _confirmController,
+                    _obscureConfirm,
+                        (v) {
+                      setState(() => _obscureConfirm = v);
+                    },
+                  ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -169,8 +178,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildPasswordField(String label, TextEditingController c,
-      bool obscure, Function(bool) toggle) {
+  Widget _buildPasswordField(
+      String label,
+      TextEditingController c,
+      bool obscure,
+      Function(bool) toggle,
+      ) {
     return TextFormField(
       controller: c,
       obscureText: obscure,
@@ -180,8 +193,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         labelStyle: const TextStyle(color: Colors.white70),
         prefixIcon: const Icon(Icons.lock_outline, color: Colors.white),
         suffixIcon: IconButton(
-          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility,
-              color: Colors.white),
+          icon: Icon(
+            obscure ? Icons.visibility_off : Icons.visibility,
+            color: Colors.white,
+          ),
           onPressed: () => toggle(!obscure),
         ),
         filled: true,
