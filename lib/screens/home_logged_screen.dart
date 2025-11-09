@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:smarttoll_app/screens/recharge_screen.dart';
 import 'profile_screen.dart';
+import 'recharge_screen.dart';
 
 class HomeLoggedScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -151,7 +153,12 @@ class _HomeLoggedScreenState extends State<HomeLoggedScreen> {
             crossAxisSpacing: 14,
             mainAxisSpacing: 14,
             children: [
-              _menuItem(Icons.account_balance_wallet_rounded, "Nạp tiền", "Nạp nhanh"),
+              _menuItem(Icons.account_balance_wallet_rounded, "Nạp tiền", "Nạp nhanh",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RechargeScreen()),
+                ),
+              ),
               _menuItem(Icons.receipt_long_rounded, "Tra cứu", "Xem giao dịch"),
 
               // 🆕 Thêm chức năng mới

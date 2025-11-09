@@ -143,14 +143,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  _menuItem(Icons.account_balance_wallet, "Nạp tiền", onTap: () {
-                    Navigator.pushNamed(context, '/recharge');
-                  }),
+                  _menuItem(Icons.account_balance_wallet, "Nạp tiền"),
                   _menuItem(Icons.confirmation_num, "Mua vé tháng"),
                   _menuItem(Icons.link, "Liên kết\nngân hàng", isNew: true),
-                  _menuItem(Icons.directions_car, "Quản lý xe", onTap: () {
-                    Navigator.pushNamed(context, '/vehicle');
-                  }),
+                  _menuItem(Icons.directions_car, "Quản lý xe"),
                   _menuItem(Icons.shield, "Bảo hiểm\nTNDS", isNew: true),
                   _menuItem(Icons.emergency, "Cứu hộ\ntoàn quốc", isNew: true),
                   _menuItem(Icons.card_giftcard, "Smart Loyalty", isNew: true),
@@ -278,47 +274,42 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  static Widget _menuItem(IconData icon, String title,
-      {bool isNew = false, VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Icon(icon, size: 36, color: Colors.black87),
-              if (isNew)
-                Positioned(
-                  right: -6,
-                  top: -6,
-                  child: Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      "Mới",
-                      style: TextStyle(color: Colors.white, fontSize: 10),
-                    ),
+  static Widget _menuItem(IconData icon, String title, {bool isNew = false}) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(icon, size: 36, color: Colors.black87),
+            if (isNew)
+              Positioned(
+                right: -6,
+                top: -6,
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    "Mới",
+                    style: TextStyle(color: Colors.white, fontSize: 10),
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+      ],
     );
   }
-
 
   static Widget _promoCard({
     required String title,
