@@ -3,6 +3,8 @@ import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/otp_screen.dart';
+import 'screens/recharge_screen.dart';
+import 'screens/vehicle_screen.dart';
 
 void main() {
   runApp(const SmartTollApp());
@@ -22,13 +24,11 @@ class SmartTollApp extends StatelessWidget {
       ),
       home: const HomeScreen(),
 
-      // ===================== ROUTES =====================
       routes: {
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
 
-        // ✅ Sửa lại phần OTP: nhận tham số email qua arguments
         '/otp': (context) {
           final args = ModalRoute.of(context)?.settings.arguments
           as Map<String, dynamic>?;
