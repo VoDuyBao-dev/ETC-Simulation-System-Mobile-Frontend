@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:smarttoll_app/screens/history_screen.dart';
 import 'package:smarttoll_app/screens/recharge_screen.dart';
 import 'package:smarttoll_app/screens/vehicle_screen.dart';
 import 'profile_screen.dart';
 import 'recharge_screen.dart';
 import 'vehicle_screen.dart';
+import 'history_screen.dart';
 
 class HomeLoggedScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -168,8 +170,12 @@ class _HomeLoggedScreenState extends State<HomeLoggedScreen> {
                   MaterialPageRoute(builder: (_) => const VehicleScreen()),
                 ),
               ),
-              _menuItem(Icons.history_rounded, "Lịch sử thu phí", "Giao dịch gần đây"),
-
+              _menuItem(Icons.history_rounded, "Lịch sử thu phí", "Giao dịch gần đây",
+                onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                ),
+              ),
               _menuItem(Icons.card_giftcard_rounded, "Khuyến mãi", "Ưu đãi hấp dẫn"),
               _menuItem(Icons.support_agent_rounded, "Hỗ trợ", "Chat nhân viên"),
               _menuItem(Icons.account_balance_rounded, "Liên kết ngân hàng", ""),
