@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/vehicle.dart';
 
 class VehicleScreen extends StatefulWidget {
   const VehicleScreen({super.key});
@@ -9,177 +8,417 @@ class VehicleScreen extends StatefulWidget {
 }
 
 class _VehicleScreenState extends State<VehicleScreen> {
-  final List<Vehicle> _vehicles = [
-    Vehicle(plate: "30A-12345", type: "Ô tô con"),
-    Vehicle(plate: "29B-67890", type: "Xe tải"),
+  final Color primaryColor = const Color(0xFF0099FF);
+  final Color secondaryColor = const Color(0xFF00CC99);
+
+  List<Map<String, dynamic>> vehicles = [
+    {
+      'plate': '51H-123.45',
+      'etag': 'ETG001',
+      'status': true,
+      'etagStatus': 'Hoạt động',
+      'type': 'Xe hơi',
+    },
+    {
+      'plate': '60A-678.90',
+      'etag': 'ETG002',
+      'status': false,
+      'etagStatus': 'Không hoạt động',
+      'type': 'Xe tải',
+    },
   ];
-
-  void _addVehicle() async {
-    final newVehicle = await showDialog<Vehicle>(
-      context: context,
-      builder: (_) => const AddOrEditVehicleDialog(),
-    );
-    if (newVehicle != null) {
-      setState(() => _vehicles.add(newVehicle));
-    }
-  }
-
-  void _editVehicle(Vehicle vehicle) async {
-    final editedVehicle = await showDialog<Vehicle>(
-      context: context,
-      builder: (_) => AddOrEditVehicleDialog(vehicle: vehicle),
-    );
-    if (editedVehicle != null) {
-      setState(() {
-        final index = _vehicles.indexOf(vehicle);
-        if (index != -1) _vehicles[index] = editedVehicle;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Đã cập nhật xe ${editedVehicle.plate}")),
-      );
-    }
-  }
-
-  void _deleteVehicle(Vehicle v) {
-    setState(() => _vehicles.remove(v));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Đã xóa xe ${v.plate}")),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
-        title: const Text("Quản lý phương tiện"),
-        backgroundColor: Colors.green,
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        onPressed: _addVehicle,
-        child: const Icon(Icons.add),
+        title: const Text(
+          "Quản lý phương tiện",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        centerTitle: true,
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _vehicles.length,
+        itemCount: vehicles.length,
         itemBuilder: (context, index) {
-          final vehicle = _vehicles[index];
-          return Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            margin: const EdgeInsets.only(bottom: 12),
-            elevation: 2,
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.green.shade50,
-                child: Icon(Icons.directions_car, color: Colors.green.shade700),
-              ),
-              title: Text(
-                vehicle.plate,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              subtitle: Text(vehicle.type),
-              trailing: PopupMenuButton<String>(
-                onSelected: (value) {
-                  if (value == 'edit') _editVehicle(vehicle);
-                  if (value == 'delete') _deleteVehicle(vehicle);
-                },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('✏️ Chỉnh sửa')),
-                  const PopupMenuItem(
-                      value: 'delete', child: Text('🗑️ Xóa phương tiện')),
-                ],
-              ),
-            ),
-          );
+          final vehicle = vehicles[index];
+          return _vehicleCard(vehicle);
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: primaryColor,
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
+        onPressed: () async {
+          final newVehicle = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddVehicleScreen()),
+          );
+          if (newVehicle != null) {
+            setState(() {
+              vehicles.add(newVehicle);
+            });
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _vehicleCard(Map<String, dynamic> vehicle) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => VehicleDetailScreen(vehicle: vehicle),
+          ),
+        );
+      },
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 4,
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: primaryColor.withOpacity(0.1),
+                child: Icon(
+                  vehicle['type'] == 'Xe tải'
+                      ? Icons.local_shipping_rounded
+                      : Icons.directions_car_rounded,
+                  color: primaryColor,
+                  size: 30,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(vehicle['plate'],
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18)),
+                    const SizedBox(height: 4),
+                    Text("E-Tag: ${vehicle['etag']}",
+                        style: const TextStyle(color: Colors.grey)),
+                    Text(
+                        "Trạng thái: ${vehicle['status'] ? "Hoạt động" : "Không hoạt động"}",
+                        style: const TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  size: 18, color: Colors.grey),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class AddOrEditVehicleDialog extends StatefulWidget {
-  final Vehicle? vehicle;
-  const AddOrEditVehicleDialog({super.key, this.vehicle});
+//
+// ======================== CHI TIẾT XE ========================
+//
+class VehicleDetailScreen extends StatefulWidget {
+  final Map<String, dynamic> vehicle;
+  const VehicleDetailScreen({super.key, required this.vehicle});
 
   @override
-  State<AddOrEditVehicleDialog> createState() => _AddOrEditVehicleDialogState();
+  State<VehicleDetailScreen> createState() => _VehicleDetailScreenState();
 }
 
-class _AddOrEditVehicleDialogState extends State<AddOrEditVehicleDialog> {
-  final _formKey = GlobalKey<FormState>();
-  late TextEditingController plateCtrl;
-  String? vehicleType;
+class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final Color primaryColor = const Color(0xFF0099FF);
+    final Color secondaryColor = const Color(0xFF00CC99);
+    bool isActive = widget.vehicle['status'];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      appBar: AppBar(
+        title: const Text("Chi tiết phương tiện"),
+        centerTitle: true,
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4))
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      widget.vehicle['plate'],
+                      style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                            colors: [primaryColor, secondaryColor]),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(widget.vehicle['type'],
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 30),
+
+              _infoRow(Icons.nfc_rounded, "Số E-Tag", widget.vehicle['etag']),
+              const SizedBox(height: 16),
+
+              // trạng thái phương tiện có nút bật/tắt
+              Row(
+                children: [
+                  const Icon(Icons.power_settings_new_rounded,
+                      color: Colors.blueAccent),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text("Trạng thái phương tiện",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 16)),
+                  ),
+                  Switch(
+                    value: isActive,
+                    activeThumbColor: secondaryColor,
+                    onChanged: (v) {
+                      setState(() => isActive = v);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // trạng thái eTag chỉ hiển thị
+              _infoRow(Icons.verified_rounded, "Trạng thái E-Tag",
+                  widget.vehicle['etagStatus']),
+              const SizedBox(height: 30),
+
+              // Nút Lưu trạng thái
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    widget.vehicle['status'] = isActive;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          "Đã lưu trạng thái: ${isActive ? "Hoạt động" : "Không hoạt động"}"),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient:
+                    LinearGradient(colors: [primaryColor, secondaryColor]),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    "Lưu thay đổi",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _infoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, color: const Color(0xFF0099FF)),
+        const SizedBox(width: 12),
+        Expanded(
+            child: Text(label,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: 16))),
+        Text(value,
+            style: const TextStyle(fontSize: 16, color: Colors.black87)),
+      ],
+    );
+  }
+}
+
+//
+// ======================== THÊM PHƯƠNG TIỆN ========================
+//
+class AddVehicleScreen extends StatefulWidget {
+  const AddVehicleScreen({super.key});
 
   @override
-  void initState() {
-    super.initState();
-    plateCtrl = TextEditingController(text: widget.vehicle?.plate ?? '');
-    vehicleType = widget.vehicle?.type;
-  }
+  State<AddVehicleScreen> createState() => _AddVehicleScreenState();
+}
+
+class _AddVehicleScreenState extends State<AddVehicleScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _plateController = TextEditingController();
+  final TextEditingController _etagController = TextEditingController();
+
+  String? _selectedType; // để mặc định là null -> hiển thị “Chọn loại phương tiện”
+  final Color primaryColor = const Color(0xFF0099FF);
+  final Color secondaryColor = const Color(0xFF00CC99);
 
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.vehicle != null;
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      appBar: AppBar(
+        title: const Text("Thêm phương tiện"),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _plateController,
+                decoration:
+                _inputDecoration("Biển số xe", Icons.directions_car_rounded),
+                validator: (v) => v!.isEmpty ? "Nhập biển số xe" : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _etagController,
+                decoration: _inputDecoration("Số E-Tag", Icons.nfc_rounded),
+                validator: (v) => v!.isEmpty ? "Nhập số E-Tag" : null,
+              ),
+              const SizedBox(height: 16),
+              const Text("Loại phương tiện",
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+              const SizedBox(height: 8),
 
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: Text(isEditing ? "Chỉnh sửa phương tiện" : "Thêm phương tiện mới"),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: plateCtrl,
-              decoration: const InputDecoration(
-                labelText: "Biển số xe",
-                prefixIcon: Icon(Icons.confirmation_number_outlined),
+              // Dropdown đẹp + xổ xuống dưới
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.grey.shade300),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 5,
+                        offset: const Offset(0, 2))
+                  ],
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    hint: const Text("Chọn loại phương tiện"),
+                    value: _selectedType,
+                    borderRadius: BorderRadius.circular(14),
+                    icon: const Icon(Icons.arrow_drop_down_rounded, size: 30),
+                    isExpanded: true,
+                    dropdownColor: Colors.white,
+                    menuMaxHeight: 200, // ép dropdown xổ xuống
+                    items: ['Xe hơi', 'Xe tải']
+                        .map((type) => DropdownMenuItem(
+                      value: type,
+                      child: Padding(
+                        padding:
+                        const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(type,
+                            style: const TextStyle(fontSize: 16)),
+                      ),
+                    ))
+                        .toList(),
+                    onChanged: (v) => setState(() => _selectedType = v),
+                  ),
+                ),
               ),
-              validator: (value) =>
-              value == null || value.isEmpty ? "Nhập biển số xe" : null,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: "Loại phương tiện",
-                prefixIcon: Icon(Icons.local_taxi),
+
+              const SizedBox(height: 30),
+              GestureDetector(
+                onTap: () {
+                  if (_formKey.currentState!.validate() &&
+                      _selectedType != null) {
+                    Navigator.pop(context, {
+                      'plate': _plateController.text,
+                      'etag': _etagController.text,
+                      'status': true,
+                      'etagStatus': 'Hoạt động',
+                      'type': _selectedType!,
+                    });
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    gradient:
+                    LinearGradient(colors: [primaryColor, secondaryColor]),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    "Thêm phương tiện",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
-              value: vehicleType,
-              items: const [
-                DropdownMenuItem(value: "Ô tô con", child: Text("Ô tô con")),
-                DropdownMenuItem(value: "Xe tải", child: Text("Xe tải")),
-                DropdownMenuItem(value: "Xe khách", child: Text("Xe khách")),
-                DropdownMenuItem(
-                    value: "Xe container", child: Text("Xe container")),
-              ],
-              onChanged: (val) => setState(() => vehicleType = val),
-              validator: (value) =>
-              value == null ? "Chọn loại phương tiện" : null,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Hủy"),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              final v = Vehicle(
-                plate: plateCtrl.text.trim(),
-                type: vehicleType!,
-              );
-              Navigator.pop(context, v);
-            }
-          },
-          child: Text(isEditing ? "Lưu thay đổi" : "Thêm"),
-        ),
-      ],
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: primaryColor),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
     );
   }
 }
