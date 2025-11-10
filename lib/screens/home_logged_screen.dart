@@ -6,6 +6,7 @@ import 'profile_screen.dart';
 import 'recharge_screen.dart';
 import 'vehicle_screen.dart';
 import 'history_screen.dart';
+import 'transaction_history_screen.dart';
 
 class HomeLoggedScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -163,7 +164,12 @@ class _HomeLoggedScreenState extends State<HomeLoggedScreen> {
                   MaterialPageRoute(builder: (_) => const RechargeScreen()),
                 ),
               ),
-              _menuItem(Icons.receipt_long_rounded, "Tra cứu", "Xem giao dịch"),
+              _menuItem(Icons.receipt_long_rounded, "Tra cứu", "Xem giao dịch",
+                onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()),
+                ),
+              ),
               _menuItem(Icons.directions_car_rounded, "Quản lý phương tiện", "Xe đã đăng ký",
                 onTap: () => Navigator.push(
                   context,
