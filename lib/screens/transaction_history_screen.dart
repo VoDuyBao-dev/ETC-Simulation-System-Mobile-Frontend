@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class TransactionHistoryScreen extends StatelessWidget {
-  const TransactionHistoryScreen({super.key});
+class TransactionHistoryScreen extends StatelessWidget
+{ const TransactionHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = const Color(0xFF0099FF);
     final Color secondaryColor = const Color(0xFF00CC99);
 
-    // Dữ liệu mẫu (gồm nạp tiền và trừ tiền)
     final List<Map<String, dynamic>> transactions = [
       {
         'type': 'NẠP TIỀN',
         'amount': 200000,
         'balance': 725000,
         'time': DateTime.now().subtract(const Duration(hours: 2)),
-        'method': 'Ví điện tử Momo',
+        'method': 'Ngân hàng (VNPay)',
       },
       {
         'type': 'TRỪ PHÍ QUA TRẠM',
@@ -30,22 +29,21 @@ class TransactionHistoryScreen extends StatelessWidget {
         'amount': 50000,
         'balance': 875000,
         'time': DateTime.now().subtract(const Duration(days: 2, hours: 5)),
-        'method': 'Ngân hàng Vietcombank',
-      },
-      {
-        'type': 'TRỪ PHÍ QUA TRẠM',
-        'amount': -25000,
-        'balance': 825000,
-        'time': DateTime.now().subtract(const Duration(days: 3, hours: 6)),
-        'method': 'Trạm Phú Mỹ',
+        'method': 'Ngân hàng (VNPay)',
       },
     ];
+
+    final numberFormat = NumberFormat('#,###', 'en_US');
+
+    // Lọc chỉ lấy giao dịch NẠP TIỀN
+    final rechargeTransactions =
+    transactions.where((tx) => tx['type'] == 'NẠP TIỀN').toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
         title: const Text(
-          "Tra cứu giao dịch",
+          "Lịch sử nạp tiền",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -55,13 +53,11 @@ class TransactionHistoryScreen extends StatelessWidget {
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: transactions.length,
+        itemCount: rechargeTransactions.length,
         itemBuilder: (context, index) {
-          final tx = transactions[index];
+          final tx = rechargeTransactions[index];
           final formattedTime =
           DateFormat('dd/MM/yyyy HH:mm').format(tx['time']);
-          final isRecharge = tx['amount'] > 0;
-
           return Container(
             margin: const EdgeInsets.only(bottom: 14),
             decoration: BoxDecoration(
@@ -80,7 +76,7 @@ class TransactionHistoryScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 🕒 Thời gian
+                  // Thời gian
                   Text(
                     formattedTime,
                     style: const TextStyle(
@@ -90,19 +86,19 @@ class TransactionHistoryScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
 
-                  // 🔹 Loại giao dịch
+                  // Loại giao dịch
                   Text(
                     tx['type'],
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
-                      color: isRecharge ? secondaryColor : primaryColor,
+                      color: secondaryColor,
                       letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 6),
 
-                  // 🔹 Phương thức / Trạm
+                  // Phương thức
                   Text(
                     tx['method'],
                     style: const TextStyle(
@@ -110,7 +106,7 @@ class TransactionHistoryScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  // 🔹 Số tiền
+                  // Số tiền
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -120,18 +116,17 @@ class TransactionHistoryScreen extends StatelessWidget {
                               fontWeight: FontWeight.w500,
                               color: Colors.black54)),
                       Text(
-                        "${tx['amount'] > 0 ? '+' : ''}${tx['amount']}đ",
+                        "${numberFormat.format(tx['amount'])} VND",
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isRecharge ? secondaryColor : Colors.redAccent,
-                        ),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: secondaryColor),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
 
-                  // 🔹 Số dư sau giao dịch
+                  // Số dư sau giao dịch
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -141,7 +136,7 @@ class TransactionHistoryScreen extends StatelessWidget {
                               fontWeight: FontWeight.w500,
                               color: Colors.black54)),
                       Text(
-                        "${tx['balance']}đ",
+                        "${numberFormat.format(tx['balance'])} VND",
                         style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

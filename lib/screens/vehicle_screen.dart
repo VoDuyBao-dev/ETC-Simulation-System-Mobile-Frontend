@@ -386,12 +386,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                 _inputDecoration("Biển số xe", Icons.directions_car_rounded),
                 validator: (v) => v!.isEmpty ? "Nhập biển số xe" : null,
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _etagController,
-                decoration: _inputDecoration("Số E-Tag", Icons.nfc_rounded),
-                validator: (v) => v!.isEmpty ? "Nhập số E-Tag" : null,
-              ),
+
               const SizedBox(height: 16),
               const Text("Loại phương tiện",
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),

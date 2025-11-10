@@ -39,6 +39,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   String searchText = '';
 
+  // NumberFormat để thêm dấu , và hiển thị VND
+  final NumberFormat numberFormat = NumberFormat('#,###', 'en_US');
+
   @override
   Widget build(BuildContext context) {
     final filteredTransactions = transactions.where((tx) {
@@ -62,7 +65,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         children: [
           const SizedBox(height: 12),
 
-          // ----- Thanh tìm kiếm -----
+          // Thanh tìm kiếm
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
@@ -86,7 +89,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
           const SizedBox(height: 8),
 
-          // ----- Danh sách giao dịch -----
+          // Danh sách giao dịch
           Expanded(
             child: filteredTransactions.isEmpty
                 ? const Center(child: Text("Không có giao dịch nào"))
@@ -149,24 +152,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             const SizedBox(height: 14),
 
-            // Phí trừ
+            // Phí trừ (màu đỏ, tiền âm)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   "Phí trừ:",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: primaryColor,
+                    color: Colors.redAccent,
                   ),
                 ),
                 Text(
-                  "${tx['fee']} đ",
+                  "-${numberFormat.format(tx['fee'])} VND",
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Colors.redAccent,
                   ),
                 ),
               ],
@@ -185,7 +188,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       color: Colors.grey),
                 ),
                 Text(
-                  "${tx['balance']} đ",
+                  "${numberFormat.format(tx['balance'])} VND",
                   style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
