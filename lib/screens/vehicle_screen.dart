@@ -135,12 +135,19 @@ class VehicleDetailScreen extends StatefulWidget {
 }
 
 class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
+  late bool isActive;
+
+  final Color primaryColor = const Color(0xFF0099FF);
+  final Color secondaryColor = const Color(0xFF00CC99);
+
+  @override
+  void initState() {
+    super.initState();
+    isActive = widget.vehicle['status'];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = const Color(0xFF0099FF);
-    final Color secondaryColor = const Color(0xFF00CC99);
-    bool isActive = widget.vehicle['status'];
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
@@ -158,74 +165,118 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4))
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ----------- Biển số xe + loại xe -----------
               Center(
                 child: Column(
                   children: [
                     Text(
                       widget.vehicle['plate'],
                       style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87),
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
+                          horizontal: 18, vertical: 6),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                            colors: [primaryColor, secondaryColor]),
+                          colors: [Color(0xFF0099FF), Color(0xFF00CC99)],
+                        ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(widget.vehicle['type'],
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600)),
+                      child: Text(
+                        widget.vehicle['type'],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 30),
 
+              const SizedBox(height: 28),
+              const Divider(),
+
+              const SizedBox(height: 14),
+
+              // ----------- Số E-Tag -----------
               _infoRow(Icons.nfc_rounded, "Số E-Tag", widget.vehicle['etag']),
+
               const SizedBox(height: 16),
 
-              // trạng thái phương tiện có nút bật/tắt
+              // ----------- Trạng thái phương tiện (Switch) -----------
               Row(
                 children: [
-                  const Icon(Icons.power_settings_new_rounded,
-                      color: Colors.blueAccent),
-                  const SizedBox(width: 10),
+                  Icon(Icons.power_settings_new_rounded,
+                      color: primaryColor, size: 26),
+                  const SizedBox(width: 12),
                   const Expanded(
-                    child: Text("Trạng thái phương tiện",
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16)),
+                    child: Text(
+                      "Trạng thái phương tiện",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
                   ),
                   Switch(
                     value: isActive,
-                    activeThumbColor: secondaryColor,
+                    activeColor: Colors.white,
+                    activeTrackColor: secondaryColor,
+                    inactiveThumbColor: Colors.grey.shade200,
+                    inactiveTrackColor: Colors.grey.shade400,
                     onChanged: (v) {
                       setState(() => isActive = v);
                     },
                   ),
                 ],
               ),
+
               const SizedBox(height: 16),
 
-              // trạng thái eTag chỉ hiển thị
-              _infoRow(Icons.verified_rounded, "Trạng thái E-Tag",
-                  widget.vehicle['etagStatus']),
-              const SizedBox(height: 30),
+              // ----------- Trạng thái E-Tag (chỉ hiển thị) -----------
+              Row(
+                children: [
+                  const Icon(Icons.verified_rounded,
+                      color: Color(0xFF0099FF), size: 26),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      "Trạng thái E-Tag",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                  ),
+                  Text(
+                    widget.vehicle['etagStatus'],
+                    style: TextStyle(
+                      color: widget.vehicle['etagStatus'] == 'Hoạt động'
+                          ? secondaryColor
+                          : Colors.redAccent,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
 
-              // Nút Lưu trạng thái
+              const SizedBox(height: 32),
+              const Divider(),
+
+              // ----------- Nút lưu -----------
               GestureDetector(
                 onTap: () {
                   setState(() {
@@ -234,25 +285,35 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                          "Đã lưu trạng thái: ${isActive ? "Hoạt động" : "Không hoạt động"}"),
+                        "Đã lưu trạng thái: ${isActive ? "Hoạt động" : "Không hoạt động"}",
+                      ),
                     ),
                   );
                 },
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
                   decoration: BoxDecoration(
-                    gradient:
-                    LinearGradient(colors: [primaryColor, secondaryColor]),
+                    gradient: LinearGradient(
+                      colors: [primaryColor, secondaryColor],
+                    ),
                     borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryColor.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                   alignment: Alignment.center,
                   child: const Text(
                     "Lưu thay đổi",
                     style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold),
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -266,14 +327,19 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
   Widget _infoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFF0099FF)),
+        Icon(icon, color: primaryColor, size: 26),
         const SizedBox(width: 12),
         Expanded(
-            child: Text(label,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w600, fontSize: 16))),
-        Text(value,
-            style: const TextStyle(fontSize: 16, color: Colors.black87)),
+          child: Text(
+            label,
+            style: const TextStyle(
+                fontWeight: FontWeight.w600, fontSize: 16),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 16, color: Colors.black87),
+        ),
       ],
     );
   }
