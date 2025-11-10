@@ -1,0 +1,47 @@
+name: smarttoll_app
+description: "Ứng dụng Flutter hiển thị dữ liệu từ API ."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  image_picker: ^1.1.1
+
+  cupertino_icons: ^1.0.8
+
+  #  Dùng để gọi API
+  http: ^1.2.2
+
+  #  Quản lý trạng thái (giúp lưu và chia sẻ dữ liệu giữa các màn hình)
+  provider: ^6.1.2
+
+  #  Điều hướng, quản lý route dễ hơn
+  go_router: ^14.1.4
+
+  #  Load ảnh từ Internet (ví dụ hình xe, trạm thu phí...)
+  cached_network_image: ^3.3.1
+
+  #  Giao diện dễ đẹp hơn (tùy chọn)
+  fluttertoast: ^8.2.6
+  intl: ^0.18.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  #  Thêm thư mục assets nếu có hình ảnh hoặc file JSON
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/images/avatar.png
