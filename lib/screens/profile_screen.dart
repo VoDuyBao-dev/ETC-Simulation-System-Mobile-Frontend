@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../services/api_service.dart'; // 🔹 import file gọi API
+import '../services/api_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -143,130 +143,141 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-      child: Column(
-        children: [
-          // ---------- ẢNH ĐẠI DIỆN ----------
-          Center(
-            child: Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Colors.grey.shade300,
-                  backgroundImage: _avatarImage != null
-                      ? FileImage(_avatarImage!)
-                      : const AssetImage('assets/avatar.png')
-                  as ImageProvider,
-                  child: _avatarImage == null
-                      ? const Icon(Icons.person, size: 60, color: Colors.white)
-                      : null,
-                ),
-                Positioned(
-                  bottom: 6,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: _pickAvatar,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [primaryColor, secondaryColor],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryColor.withOpacity(0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
+    // Bọc toàn bộ body trong Scaffold để có Material context
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      appBar: AppBar(
+        title: const Text("Thông tin cá nhân"),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+        child: Column(
+          children: [
+            // ---------- ẢNH ĐẠI DIỆN ----------
+            Center(
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.grey.shade300,
+                    backgroundImage: _avatarImage != null
+                        ? FileImage(_avatarImage!)
+                        : const AssetImage('assets/images/avatar.png')
+                    as ImageProvider,
+                    child: _avatarImage == null
+                        ? const Icon(Icons.person,
+                        size: 60, color: Colors.white)
+                        : null,
+                  ),
+                  Positioned(
+                    bottom: 6,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: _pickAvatar,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [primaryColor, secondaryColor],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(6),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 20,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: primaryColor.withOpacity(0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(6),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 35),
-
-          // ---------- THÔNG TIN NGƯỜI DÙNG ----------
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.all(22),
-            child: Column(
-              children: [
-                _buildFancyField(
-                  label: "Họ và tên",
-                  icon: Icons.person_outline_rounded,
-                  controller: _nameController,
-                ),
-                const SizedBox(height: 18),
-                _buildFancyField(
-                  label: "Email",
-                  icon: Icons.email_outlined,
-                  controller: _emailController,
-                  readOnly: true,
-                ),
-                const SizedBox(height: 18),
-                _buildFancyField(
-                  label: "Số điện thoại",
-                  icon: Icons.phone_outlined,
-                  controller: _phoneController,
-                ),
-                const SizedBox(height: 18),
-                _buildFancyField(
-                  label: "Địa chỉ",
-                  icon: Icons.location_on_outlined,
-                  controller: _addressController,
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 35),
-
-          ElevatedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text("Mở danh sách lịch sử giao dịch..."),
-                  backgroundColor: primaryColor,
-                ),
-              );
-            },
-            icon: const Icon(Icons.history_rounded),
-            label: const Text("Xem lịch sử giao dịch"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 52),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                ],
               ),
-              elevation: 3,
             ),
-          ),
-        ],
+
+            const SizedBox(height: 35),
+
+            // ---------- THÔNG TIN NGƯỜI DÙNG ----------
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(22),
+              child: Column(
+                children: [
+                  _buildFancyField(
+                    label: "Họ và tên",
+                    icon: Icons.person_outline_rounded,
+                    controller: _nameController,
+                  ),
+                  const SizedBox(height: 18),
+                  _buildFancyField(
+                    label: "Email",
+                    icon: Icons.email_outlined,
+                    controller: _emailController,
+                    readOnly: true,
+                  ),
+                  const SizedBox(height: 18),
+                  _buildFancyField(
+                    label: "Số điện thoại",
+                    icon: Icons.phone_outlined,
+                    controller: _phoneController,
+                  ),
+                  const SizedBox(height: 18),
+                  _buildFancyField(
+                    label: "Địa chỉ",
+                    icon: Icons.location_on_outlined,
+                    controller: _addressController,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 35),
+
+            ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text("Mở danh sách lịch sử giao dịch..."),
+                    backgroundColor: primaryColor,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.history_rounded),
+              label: const Text("Xem lịch sử giao dịch"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 52),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 3,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

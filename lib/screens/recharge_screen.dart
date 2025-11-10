@@ -124,7 +124,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                   );
                   return;
                 }
-                // ✅ Xử lý logic nạp tiền ở đây
+                // Xử lý logic nạp tiền ở đây
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Đang xử lý nạp $enteredAmountđ qua $_selectedMethod...")),
                 );

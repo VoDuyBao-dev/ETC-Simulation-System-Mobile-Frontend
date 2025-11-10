@@ -123,9 +123,9 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 }
 
-//
+
 // ======================== CHI TIẾT XE ========================
-//
+
 class VehicleDetailScreen extends StatefulWidget {
   final Map<String, dynamic> vehicle;
   const VehicleDetailScreen({super.key, required this.vehicle});

@@ -14,7 +14,7 @@ class ApiService {
 
       return {
         'success': true,
-        'message': 'Đăng ký thành công (mô phỏng)',
+        'message': 'Đăng ký thành công',
         'data': {
           'email': email,
         }
@@ -36,7 +36,7 @@ class ApiService {
       if (otp == '123456') {
         return {
           'success': true,
-          'message': 'Xác minh OTP thành công (mô phỏng)',
+          'message': 'Xác minh OTP thành công',
         };
       } else {
         return {

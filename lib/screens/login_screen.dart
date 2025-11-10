@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import 'home_logged_screen.dart'; // import trang đích
+import 'home_logged_screen.dart'; // ✅ sửa lại đúng file chứa HomeLoggedScreen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
           const SnackBar(content: Text('Đăng nhập thành công!')),
         );
 
-        //  Chuyển sang HomeLoggedScreen với thông tin user
+        // ✅ Điều hướng sang HomeLoggedScreen sau khi đăng nhập thành công
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
