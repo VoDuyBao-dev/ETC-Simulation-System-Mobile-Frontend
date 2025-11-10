@@ -164,7 +164,7 @@ class _HomeLoggedScreenState extends State<HomeLoggedScreen> {
                   MaterialPageRoute(builder: (_) => const RechargeScreen()),
                 ),
               ),
-              _menuItem(Icons.receipt_long_rounded, "Tra cứu", "Xem giao dịch",
+              _menuItem(Icons.receipt_long_rounded, "Lịch sử nạp tiền", "Xem giao dịch",
                 onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()),

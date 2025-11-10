@@ -12,7 +12,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
   final Color secondaryColor = const Color(0xFF00CC99);
   final TextEditingController _amountController = TextEditingController();
 
-  String _selectedMethod = 'Ví điện tử';
+  String _selectedMethod = 'Thanh toán qua ngân hàng (VNPay)';
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +59,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                 children: const [
                   Text("Số dư hiện tại", style: TextStyle(color: Colors.white70)),
                   SizedBox(height: 6),
-                  Text("350,000đ",
+                  Text("350,000 VND",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 28,
@@ -110,8 +110,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 10),
 
-            _paymentMethod("Ví điện tử", Icons.account_balance_wallet_rounded),
-            _paymentMethod("Ngân hàng", Icons.account_balance_rounded),
+            _paymentMethod("Thanh toán qua ngân hàng (VNPay)", Icons.account_balance_wallet_rounded),
 
             const SizedBox(height: 30),
 
