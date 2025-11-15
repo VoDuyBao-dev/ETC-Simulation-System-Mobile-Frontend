@@ -24,6 +24,7 @@ class SmartTollApp extends StatelessWidget {
       ),
       home: const HomeScreen(),
 
+
       routes: {
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),

@@ -24,10 +24,20 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
       appBar: AppBar(
         title: const Text("Tất cả dịch vụ"),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [primaryColor, secondaryColor],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         foregroundColor: Colors.white,
       ),
-      backgroundColor: const Color(0xFFF5F6FA),
+
+      backgroundColor: const Color(0xFFF2F4F8),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -42,24 +52,31 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
 
                 _menuItem(Icons.person_rounded, "Thông tin cá nhân", "",
                     onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const ProfileScreen()))),
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    )),
+
                 _menuItem(Icons.account_balance_wallet_rounded, "Nạp tiền", "Nạp nhanh",
                     onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const RechargeScreen()))),
+                      context,
+                      MaterialPageRoute(builder: (_) => const RechargeScreen()),
+                    )),
+
                 _menuItem(Icons.receipt_long_rounded, "Lịch sử nạp tiền", "Xem giao dịch",
                     onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const TransactionHistoryScreen()))),
+
                 _menuItem(Icons.directions_car_rounded, "Quản lý phương tiện", "Xe đã đăng ký",
                     onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const VehicleScreen()))),
+
                 _menuItem(Icons.history_rounded, "Lịch sử thu phí", "Giao dịch gần đây",
                     onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const HistoryScreen()))),
+                      context,
+                      MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                    )),
 
                 _menuItem(Icons.card_giftcard_rounded, "Khuyến mãi", "Ưu đãi hấp dẫn"),
                 _menuItem(Icons.support_agent_rounded, "Hỗ trợ", "Chat nhân viên"),
@@ -79,29 +96,55 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            )
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 4))
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 42, color: primaryColor),
-            const SizedBox(height: 8),
-            Text(title,
-                style:
-                const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            if (subtitle.isNotEmpty)
-              Text(subtitle,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            // ICON BACKGROUND GRADIENT
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [primaryColor, secondaryColor],
+                ),
+              ),
+              child: Icon(icon, size: 28, color: Colors.white),
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+
+            if (subtitle.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+            ]
           ],
         ),
       ),

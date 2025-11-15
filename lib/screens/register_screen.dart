@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'dart:async';
-import '../services/api_service.dart';
+import 'package:smarttoll_app/api/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -20,9 +19,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePass = true;
   bool _obscureConfirm = true;
 
-  // ==================== GỌI API ĐĂNG KÝ ====================
+  // ===============================
+  //        GỌI API ĐĂNG KÝ
+  // ===============================
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+
     if (_passwordController.text != _confirmController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Mật khẩu xác nhận không khớp!")),
@@ -34,24 +36,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final response = await ApiService.register(
-        _emailController.text,
-        _passwordController.text,
+        username: _emailController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        confirmPassword: _confirmController.text.trim(),
+        fullname: _emailController.text.trim(), // tạm dùng email
+        phone: "",
+        address: "",
+        role: "CUSTOMER",
       );
 
       setState(() => _isLoading = false);
 
-      if (response['success'] == true) {
-        // ❌ Không hiển thị snackbar “Đăng ký thành công!”
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(content: Text("Đăng ký thành công!")),
-        // );
-
-        // ✅ Chuyển thẳng sang màn hình OTP, truyền email qua arguments
+      if (response['code'] == 200) {
+        // CHUYỂN SANG OTP
         SchedulerBinding.instance.addPostFrameCallback((_) {
           Navigator.pushReplacementNamed(
             context,
             '/otp',
-            arguments: {'email': _emailController.text},
+            arguments: {'email': _emailController.text.trim()},
           );
         });
       } else {
@@ -67,7 +70,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  // ==================== GIAO DIỆN UI ====================
+  // ================================
+  //              UI
+  // ================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,26 +102,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   const SizedBox(height: 25),
+
                   _buildTextField("Email", Icons.email_outlined, _emailController),
                   const SizedBox(height: 16),
+
                   _buildPasswordField(
                     "Mật khẩu",
                     _passwordController,
                     _obscurePass,
-                        (v) {
-                      setState(() => _obscurePass = v);
-                    },
+                        (v) => setState(() => _obscurePass = v),
                   ),
                   const SizedBox(height: 16),
+
                   _buildPasswordField(
                     "Xác nhận mật khẩu",
                     _confirmController,
                     _obscureConfirm,
-                        (v) {
-                      setState(() => _obscureConfirm = v);
-                    },
+                        (v) => setState(() => _obscureConfirm = v),
                   ),
+
                   const SizedBox(height: 24),
+
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -140,7 +146,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 20),
+
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, '/login');
@@ -162,6 +170,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  // ===============================
+  //       FIELD INPUT UI
+  // ===============================
   Widget _buildTextField(String label, IconData icon, TextEditingController c) {
     return TextFormField(
       controller: c,
