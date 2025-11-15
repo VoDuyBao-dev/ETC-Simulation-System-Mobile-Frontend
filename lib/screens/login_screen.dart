@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
-import 'home_logged_screen.dart'; // ✅ sửa lại đúng file chứa HomeLoggedScreen
+import 'package:smarttoll_app/api/api_service.dart';
+import 'home_logged_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,28 +26,34 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Gọi API mô phỏng
       final response = await ApiService.login(
-        _accountController.text,
-        _passwordController.text,
+        username: _accountController.text.trim(),
+        password: _passwordController.text.trim(),
       );
 
-      if (response['success'] == true) {
+      print("LOGIN RESPONSE: $response");
+
+      if (response['code'] == 200) {
         if (!mounted) return;
 
+        // ------------ LƯU TOKEN CHO TOÀN APP ------------
+        final result = response["result"];
+        ApiService.accessToken = result["accessToken"];   // TOKEN BACKEND TRẢ VỀ
+
+        // ------------ THÔNG BÁO ------------
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đăng nhập thành công!')),
+          SnackBar(content: Text(response['message'] ?? 'Đăng nhập thành công')),
         );
 
-        // ✅ Điều hướng sang HomeLoggedScreen sau khi đăng nhập thành công
+        // ------------ CHUYỂN TRANG HOME ------------
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => HomeLoggedScreen(
               userData: {
-                'name': 'Nguyễn Văn A',
-                'email': _accountController.text,
-                'balance': '500000',
+                "name": result["fullname"] ?? "User",
+                "email": result["email"] ?? _accountController.text,
+                "balance": result["balance"]?.toString() ?? "0",
               },
             ),
           ),
@@ -62,13 +68,14 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // ==================== SHOW ERROR ====================
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
 
-  // ==================== GIAO DIỆN UI ====================
+  // ==================== UI ====================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,7 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  //  Logo
                   Container(
                     width: 100,
                     height: 100,
@@ -102,7 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-
                   const Text(
                     'Đăng nhập SmartToll',
                     style: TextStyle(
@@ -112,7 +117,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-
                   _buildInput(
                     "Tài khoản hoặc Email",
                     Icons.person_outline,
@@ -126,32 +130,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     _passwordController,
                     true,
                   ),
-
                   const SizedBox(height: 30),
-
                   _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _login,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Đăng nhập',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0099FF),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Đăng nhập',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0099FF),
-                        ),
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 20),
                   TextButton(
                     onPressed: () {
@@ -176,9 +178,13 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ==================== FIELD INPUT ====================
-  Widget _buildInput(String label, IconData icon,
-      TextEditingController controller, bool isPassword) {
+  // ==================== TEXT INPUT ====================
+  Widget _buildInput(
+    String label,
+    IconData icon,
+    TextEditingController controller,
+    bool isPassword,
+  ) {
     return TextField(
       controller: controller,
       obscureText: isPassword ? _obscurePassword : false,
@@ -187,16 +193,16 @@ class _LoginScreenState extends State<LoginScreen> {
         prefixIcon: Icon(icon, color: Colors.white),
         suffixIcon: isPassword
             ? IconButton(
-          icon: Icon(
-            _obscurePassword
-                ? Icons.visibility_off
-                : Icons.visibility,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            setState(() => _obscurePassword = !_obscurePassword);
-          },
-        )
+                icon: Icon(
+                  _obscurePassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  setState(() => _obscurePassword = !_obscurePassword);
+                },
+              )
             : null,
         filled: true,
         fillColor: Colors.white.withOpacity(0.2),

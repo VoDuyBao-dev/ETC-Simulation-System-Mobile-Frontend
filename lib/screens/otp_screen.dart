@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import 'package:smarttoll_app/api/api_service.dart';
 
 class OtpScreen extends StatefulWidget {
-  final String email;
+  final String email; // email = username
   const OtpScreen({super.key, required this.email});
 
   @override
@@ -11,38 +11,57 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   final List<TextEditingController> _otpControllers =
-  List.generate(6, (_) => TextEditingController());
+      List.generate(6, (_) => TextEditingController());
+
   bool _isLoading = false;
 
-  // ===================== XÁC MINH OTP =====================
+  // ===================== GỌI API XÁC MINH OTP =====================
   Future<void> _verifyOtp() async {
-    String otp = _otpControllers.map((c) => c.text).join();
+       String otpCode = _otpControllers.map((c) => c.text).join();
+       String email = widget.email.trim();
 
-    if (otp.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng nhập đủ 6 ký tự OTP")),
-      );
-      return;
-    }
+       if (otpCode.length < 6) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text("Vui lòng nhập đủ 6 ký tự OTP")),
+         );
+         return;
+       }
 
-    setState(() => _isLoading = true);
+       print("===== VERIFY OTP DEBUG =====");
+       print("Email gửi lên backend: $email");
+       print("OTP nhập vào: $otpCode");
+       print("============================");
 
-    try {
-      await Future.delayed(const Duration(seconds: 1)); // Giả lập API
-      setState(() => _isLoading = false);
+       setState(() => _isLoading = true);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Xác minh OTP thành công!")),
-      );
+       try {
+         // GỌI API ĐÚNG CHUẨN
+         final response = await ApiService.verifyOtp(
+           email: widget.email.trim(),
+           otpCode: otpCode,
+         );
 
-      Navigator.pushReplacementNamed(context, '/login');
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi: $e")),
-      );
-    }
-  }
+
+         setState(() => _isLoading = false);
+
+         if (response["code"] == 200) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text("Xác minh OTP thành công!")),
+           );
+
+           Navigator.pushReplacementNamed(context, '/login');
+         } else {
+           ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(content: Text(response["message"] ?? "OTP không hợp lệ")),
+           );
+         }
+       } catch (e) {
+         setState(() => _isLoading = false);
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text("Lỗi kết nối server: $e")),
+         );
+       }
+     }
 
   // ===================== UI =====================
   @override
@@ -102,22 +121,21 @@ class _OtpScreenState extends State<OtpScreen> {
                           fillColor: Colors.white.withOpacity(0.2),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide:
-                            const BorderSide(color: Colors.white70),
+                            borderSide: const BorderSide(color: Colors.white70),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(color: Colors.white),
                           ),
                         ),
-                        style:
-                        const TextStyle(color: Colors.white, fontSize: 20),
+                        style: const TextStyle(color: Colors.white, fontSize: 20),
                       ),
                     );
                   }),
                 ),
 
                 const SizedBox(height: 50),
+
                 ElevatedButton(
                   onPressed: _isLoading ? null : _verifyOtp,
                   style: ElevatedButton.styleFrom(
@@ -131,13 +149,14 @@ class _OtpScreenState extends State<OtpScreen> {
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.blue)
                       : const Text(
-                    "Xác minh OTP",
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Color(0xFF0099FF),
-                    ),
-                  ),
+                          "Xác minh OTP",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Color(0xFF0099FF),
+                          ),
+                        ),
                 ),
+
                 const SizedBox(height: 300),
               ],
             ),
