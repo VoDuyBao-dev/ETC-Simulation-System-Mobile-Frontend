@@ -12,15 +12,25 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool isLoading = true;
+  bool _isUpdating = false;
+
+  bool editName = false;
+  bool editPhone = false;
+  bool editAddress = false;
+
+  bool get isEditingSomething => editName || editPhone || editAddress;
+
   File? _avatarImage;
 
-  final Color primary1 = const Color(0xFF0099FF);
-  final Color primary2 = const Color(0xFF00CC99);
+  final Color primaryBlue = const Color(0xFF0099FF);
+  final Color primaryGreen = const Color(0xFF00CC99);
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+
+  final FocusNode _blankFocus = FocusNode();
 
   @override
   void initState() {
@@ -28,29 +38,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserInfo();
   }
 
-  // ======================= LOAD PROFILE =======================
   Future<void> _loadUserInfo() async {
     final res = await ApiService.getMyInfo();
 
     if (res["code"] == 200) {
-      final data = res["result"];
-
-      setState(() {
-        _nameController.text = data["fullname"] ?? "";
-        _emailController.text = data["email"] ?? "";
-        _phoneController.text = data["phone"] ?? "";
-        _addressController.text = data["address"] ?? "";
-        isLoading = false;
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(res["message"] ?? "Lỗi tải thông tin")),
-      );
+      final user = res["result"];
+      _nameController.text = user["fullname"] ?? "";
+      _emailController.text = user["email"] ?? "";
+      _phoneController.text = user["phone"] ?? "";
+      _addressController.text = user["address"] ?? "";
     }
+
+    setState(() => isLoading = false);
   }
 
-  // ======================= UPDATE PROFILE =======================
   Future<void> _updateProfile() async {
+    setState(() => _isUpdating = true);
+
     final body = {
       "username": _emailController.text,
       "fullname": _nameController.text,
@@ -62,161 +66,240 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final res = await ApiService.updateUserInfo(body);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(res["message"] ?? "Cập nhật thất bại")),
+      SnackBar(content: Text(res["message"])),
     );
 
     if (res["code"] == 200) {
-      _loadUserInfo();
+      FocusScope.of(context).requestFocus(_blankFocus);
+
+      setState(() {
+        editName = false;
+        editPhone = false;
+        editAddress = false;
+      });
     }
+
+    setState(() => _isUpdating = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Thông tin cá nhân"),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // Avatar tròn
-            Center(
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 55,
-                    backgroundColor: primary1.withOpacity(0.15),
-                    backgroundImage:
-                        _avatarImage != null ? FileImage(_avatarImage!) : null,
-                    child: _avatarImage == null
-                        ? Icon(Icons.person, size: 60, color: primary1)
-                        : null,
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: InkWell(
-                      onTap: () async {
-                        final picker = ImagePicker();
-                        final picked =
-                            await picker.pickImage(source: ImageSource.gallery);
-                        if (picked != null) {
-                          setState(() {
-                            _avatarImage = File(picked.path);
-                          });
-                        }
-                      },
-                      child: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: primary1,
-                        child: const Icon(Icons.camera_alt,
-                            color: Colors.white, size: 18),
-                      ),
-                    ),
-                  ),
-                ],
+      backgroundColor: const Color(0xFFF5F7FA),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : GestureDetector(
+              onTap: () => FocusScope.of(context).requestFocus(_blankFocus),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildHeader(),
+                    _buildAvatar(),
+                    _buildForm(),
+                  ],
+                ),
               ),
             ),
+    );
+  }
 
-            const SizedBox(height: 30),
-
-            _buildInput("Họ và tên", _nameController),
-            const SizedBox(height: 15),
-
-            _buildInput("Email", _emailController, readOnly: true),
-            const SizedBox(height: 15),
-
-            _buildInput("Số điện thoại", _phoneController,
-                keyboard: TextInputType.phone),
-            const SizedBox(height: 15),
-
-            _buildInput("Địa chỉ", _addressController),
-            const SizedBox(height: 30),
-
-            _buildUpdateButton(),
-          ],
+  Widget _buildHeader() {
+    return Container(
+      height: 170,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [primaryBlue, primaryGreen],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 45,
+            left: 10,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          Positioned(
+            top: 50,
+            left: 60,
+            child: const Text(
+              "Thông tin cá nhân",
+              style: TextStyle(
+                  fontSize: 20, color: Colors.white, fontWeight: FontWeight.w600),
+            ),
+          )
+        ],
       ),
     );
   }
 
-  // ======================= UI Helpers =======================
+  Widget _buildAvatar() {
+    return Transform.translate(
+      offset: const Offset(0, -55),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircleAvatar(
+            radius: 58,
+            backgroundColor: Colors.white,
+            backgroundImage:
+                _avatarImage != null ? FileImage(_avatarImage!) : null,
+            child: _avatarImage == null
+                ? Icon(Icons.person,
+                    size: 65, color: primaryBlue.withOpacity(0.9))
+                : null,
+          ),
 
-  Widget _buildInput(String label, TextEditingController controller,
-      {bool readOnly = false, TextInputType keyboard = TextInputType.text}) {
-    return TextField(
-      controller: controller,
-      readOnly: readOnly,
-      keyboardType: keyboard,
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        fillColor: Colors.grey.shade100,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: primary1, width: 1.5),
-        ),
+          // Nhỏ lại
+          Positioned(
+            bottom: 2,
+            right: MediaQuery.of(context).size.width * 0.32,
+            child: InkWell(
+              onTap: () async {
+                final img = await ImagePicker().pickImage(source: ImageSource.gallery);
+                if (img != null) setState(() => _avatarImage = File(img.path));
+              },
+              child: CircleAvatar(
+                radius: 18, // nhỏ hơn
+                backgroundColor: primaryBlue,
+                child: const Icon(Icons.camera_alt, size: 15, color: Colors.white),
+              ),
+            ),
+          )
+        ],
       ),
+    );
+  }
+
+  Widget _buildForm() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildFloatingField(
+            "Họ và tên",
+            _nameController,
+            editable: editName,
+            onEdit: () => setState(() => editName = true),
+          ),
+          const SizedBox(height: 15),
+
+          _buildFloatingField(
+            "Email",
+            _emailController,
+            editable: false,
+            readOnly: true,
+          ),
+          const SizedBox(height: 15),
+
+          _buildFloatingField(
+            "Số điện thoại",
+            _phoneController,
+            editable: editPhone,
+            onEdit: () => setState(() => editPhone = true),
+          ),
+          const SizedBox(height: 15),
+
+          _buildFloatingField(
+            "Địa chỉ",
+            _addressController,
+            editable: editAddress,
+            onEdit: () => setState(() => editAddress = true),
+          ),
+          const SizedBox(height: 25),
+
+          if (isEditingSomething) _buildUpdateButton(),
+        ],
+      ),
+    );
+  }
+
+  // Label nằm trên field
+  Widget _buildFloatingField(
+    String label,
+    TextEditingController controller, {
+    bool editable = true,
+    bool readOnly = false,
+    VoidCallback? onEdit,
+  }) {
+    return Stack(
+      children: [
+        TextField(
+          controller: controller,
+          readOnly: readOnly ? true : !editable,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            labelText: label,
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Colors.black54,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: primaryBlue, width: 1.8),
+            ),
+          ),
+        ),
+
+        if (onEdit != null)
+          Positioned(
+            right: 12,
+            top: 12,
+            child: InkWell(
+              onTap: onEdit,
+              child: Icon(
+                Icons.edit,
+                size: 20,
+                color: editable ? primaryBlue : Colors.grey,
+              ),
+            ),
+          )
+      ],
     );
   }
 
   Widget _buildUpdateButton() {
-    return SizedBox(
+    return Container(
+      height: 50,
       width: double.infinity,
-      height: 48,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [primaryBlue, primaryGreen]),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: primaryBlue.withOpacity(0.35),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
       child: ElevatedButton(
-        onPressed: _updateProfile,
+        onPressed: _isUpdating ? null : _updateProfile,
         style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ).copyWith(
-          backgroundColor: WidgetStateProperty.resolveWith(
-            (states) => null,
-          ),
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         ),
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            gradient: LinearGradient(
-              colors: [
-                primary1,
-                primary2,
-              ],
-            ),
-          ),
-          child: Container(
-            alignment: Alignment.center,
-            child: const Text(
-              "Cập nhật",
-              style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
-            ),
-          ),
-        ),
+        child: _isUpdating
+            ? const CircularProgressIndicator(color: Colors.white)
+            : const Text(
+                "Cập nhật",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700),
+              ),
       ),
     );
   }
