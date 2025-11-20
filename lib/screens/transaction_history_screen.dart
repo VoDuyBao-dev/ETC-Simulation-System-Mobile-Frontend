@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class TransactionHistoryScreen extends StatelessWidget
-{ const TransactionHistoryScreen({super.key});
+class TransactionHistoryScreen extends StatelessWidget {
+  const TransactionHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,29 +35,50 @@ class TransactionHistoryScreen extends StatelessWidget
 
     final numberFormat = NumberFormat('#,###', 'en_US');
 
-    // Lọc chỉ lấy giao dịch NẠP TIỀN
+    // Chỉ lấy giao dịch NẠP TIỀN
     final rechargeTransactions =
-    transactions.where((tx) => tx['type'] == 'NẠP TIỀN').toList();
+        transactions.where((tx) => tx['type'] == 'NẠP TIỀN').toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
+
+      // THAY ĐỔI MÀU — AppBar gradient đúng mẫu
       appBar: AppBar(
+        automaticallyImplyLeading: true,
+        toolbarHeight: 65,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF0099FF),
+                Color(0xFF00CC99),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: const Text(
           "Lịch sử nạp tiền",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
+
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: rechargeTransactions.length,
         itemBuilder: (context, index) {
           final tx = rechargeTransactions[index];
           final formattedTime =
-          DateFormat('dd/MM/yyyy HH:mm').format(tx['time']);
+              DateFormat('dd/MM/yyyy HH:mm').format(tx['time']);
+
           return Container(
             margin: const EdgeInsets.only(bottom: 14),
             decoration: BoxDecoration(
@@ -80,9 +101,10 @@ class TransactionHistoryScreen extends StatelessWidget
                   Text(
                     formattedTime,
                     style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500),
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 8),
 
@@ -102,7 +124,10 @@ class TransactionHistoryScreen extends StatelessWidget
                   Text(
                     tx['method'],
                     style: const TextStyle(
-                        fontSize: 15, color: Colors.black87, height: 1.4),
+                      fontSize: 15,
+                      color: Colors.black87,
+                      height: 1.4,
+                    ),
                   ),
                   const SizedBox(height: 10),
 
@@ -110,37 +135,46 @@ class TransactionHistoryScreen extends StatelessWidget
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Số tiền:",
-                          style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black54)),
+                      const Text(
+                        "Số tiền:",
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black54,
+                        ),
+                      ),
                       Text(
                         "${numberFormat.format(tx['amount'])} VND",
                         style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: secondaryColor),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: secondaryColor,
+                        ),
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 6),
 
                   // Số dư sau giao dịch
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Số dư:",
-                          style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black54)),
+                      const Text(
+                        "Số dư:",
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black54,
+                        ),
+                      ),
                       Text(
                         "${numberFormat.format(tx['balance'])} VND",
                         style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
                     ],
                   ),
