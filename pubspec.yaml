@@ -48,5 +48,4 @@ flutter:
   #  Thêm thư mục assets nếu có hình ảnh hoặc file JSON
   assets:
     - assets/images/
-    - assets/icons/
     - assets/images/avatar.png
