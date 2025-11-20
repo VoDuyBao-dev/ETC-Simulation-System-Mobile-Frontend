@@ -18,15 +18,34 @@ class _RechargeScreenState extends State<RechargeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
+
+      // THAY ĐỔI MÀU – AppBar gradient đúng mẫu
       appBar: AppBar(
+        automaticallyImplyLeading: true,
+        toolbarHeight: 65,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF0099FF),
+                Color(0xFF00CC99),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: const Text(
           "Nạp tiền",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
 
       body: SingleChildScrollView(
@@ -59,11 +78,14 @@ class _RechargeScreenState extends State<RechargeScreen> {
                 children: const [
                   Text("Số dư hiện tại", style: TextStyle(color: Colors.white70)),
                   SizedBox(height: 6),
-                  Text("350,000 VND",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold)),
+                  Text(
+                    "350,000 VND",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -71,8 +93,10 @@ class _RechargeScreenState extends State<RechargeScreen> {
             const SizedBox(height: 25),
 
             // ---------- NHẬP SỐ TIỀN ----------
-            const Text("Nhập số tiền muốn nạp",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text(
+              "Nhập số tiền muốn nạp",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 10),
 
             TextField(
@@ -105,12 +129,17 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
             const SizedBox(height: 25),
 
-            // ---------- CHỌN PHƯƠNG THỨC ----------
-            const Text("Phương thức thanh toán",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            // ---------- PHƯƠNG THỨC ----------
+            const Text(
+              "Phương thức thanh toán",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 10),
 
-            _paymentMethod("Thanh toán qua ngân hàng (VNPay)", Icons.account_balance_wallet_rounded),
+            _paymentMethod(
+              "Thanh toán qua ngân hàng (VNPay)",
+              Icons.account_balance_wallet_rounded,
+            ),
 
             const SizedBox(height: 30),
 
@@ -124,9 +153,12 @@ class _RechargeScreenState extends State<RechargeScreen> {
                   );
                   return;
                 }
-                // Xử lý logic nạp tiền ở đây
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Đang xử lý nạp $enteredAmountđ qua $_selectedMethod...")),
+                  SnackBar(
+                    content: Text(
+                      "Đang xử lý nạp $enteredAmountđ qua $_selectedMethod...",
+                    ),
+                  ),
                 );
               },
               child: Container(
@@ -149,9 +181,10 @@ class _RechargeScreenState extends State<RechargeScreen> {
                 child: const Text(
                   "Xác nhận nạp tiền",
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -182,6 +215,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
   // ---------- PHƯƠNG THỨC THANH TOÁN ----------
   Widget _paymentMethod(String title, IconData icon) {
     final bool isSelected = _selectedMethod == title;
+
     return GestureDetector(
       onTap: () => setState(() => _selectedMethod = title),
       child: AnimatedContainer(

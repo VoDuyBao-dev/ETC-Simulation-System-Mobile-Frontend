@@ -12,7 +12,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   final Color primaryColor = const Color(0xFF0099FF);
   final Color secondaryColor = const Color(0xFF00CC99);
 
-  // Dữ liệu mẫu (thêm trường "content")
   final List<Map<String, dynamic>> transactions = [
     {
       'time': DateTime.now().subtract(const Duration(hours: 2)),
@@ -39,7 +38,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   String searchText = '';
 
-  // NumberFormat để thêm dấu , và hiển thị VND
   final NumberFormat numberFormat = NumberFormat('#,###', 'en_US');
 
   @override
@@ -52,26 +50,47 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
+
+      // Gradient AppBar giống giao diện bạn gửi
       appBar: AppBar(
+        automaticallyImplyLeading: true,
+        toolbarHeight: 65,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF0099FF),
+                Color(0xFF00CC99),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: const Text(
           "Lịch sử thu phí",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
+
       body: Column(
         children: [
           const SizedBox(height: 12),
 
-          // Thanh tìm kiếm
+          // Ô tìm kiếm
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               decoration: InputDecoration(
                 hintText: "Tìm theo trạm thu phí...",
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF0099FF)),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
@@ -94,13 +113,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
             child: filteredTransactions.isEmpty
                 ? const Center(child: Text("Không có giao dịch nào"))
                 : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: filteredTransactions.length,
-              itemBuilder: (context, index) {
-                final tx = filteredTransactions[index];
-                return _transactionCard(tx);
-              },
-            ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: filteredTransactions.length,
+                    itemBuilder: (context, index) {
+                      final tx = filteredTransactions[index];
+                      return _transactionCard(tx);
+                    },
+                  ),
           ),
         ],
       ),
@@ -108,12 +127,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _transactionCard(Map<String, dynamic> tx) {
-    final formattedTime = DateFormat('dd/MM/yyyy HH:mm').format(tx['time']);
+    final formattedTime =
+        DateFormat('dd/MM/yyyy HH:mm').format(tx['time']);
+
     return Card(
       elevation: 4,
       margin: const EdgeInsets.only(bottom: 16),
+
+      // Nhấn nhẹ màu chủ đạo cho shadow
+      shadowColor: primaryColor.withOpacity(0.25),
+
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      shadowColor: primaryColor.withOpacity(0.2),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -152,7 +176,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             const SizedBox(height: 14),
 
-            // Phí trừ (màu đỏ, tiền âm)
+            // Phí trừ
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -174,25 +198,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
               ],
             ),
+
             const SizedBox(height: 6),
 
-            // Số dư còn lại
+            // Số dư
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   "Số dư còn lại:",
                   style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey,
+                  ),
                 ),
                 Text(
                   "${numberFormat.format(tx['balance'])} VND",
                   style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87),
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
               ],
             ),

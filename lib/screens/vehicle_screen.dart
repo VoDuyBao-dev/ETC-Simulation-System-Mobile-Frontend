@@ -32,15 +32,32 @@ class _VehicleScreenState extends State<VehicleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
+
+      //  ĐỔI MÀU – AppBar gradient
       appBar: AppBar(
+        toolbarHeight: 65,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF0099FF),
+                Color(0xFF00CC99),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: const Text(
           "Quản lý phương tiện",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
+
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: vehicles.length,
@@ -49,6 +66,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
           return _vehicleCard(vehicle);
         },
       ),
+
       floatingActionButton: FloatingActionButton(
         backgroundColor: primaryColor,
         child: const Icon(Icons.add, color: Colors.white, size: 30),
@@ -58,9 +76,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
             MaterialPageRoute(builder: (_) => const AddVehicleScreen()),
           );
           if (newVehicle != null) {
-            setState(() {
-              vehicles.add(newVehicle);
-            });
+            setState(() => vehicles.add(newVehicle));
           }
         },
       ),
@@ -68,6 +84,8 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 
   Widget _vehicleCard(Map<String, dynamic> vehicle) {
+    final Color primaryColor = const Color(0xFF0099FF);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -123,8 +141,9 @@ class _VehicleScreenState extends State<VehicleScreen> {
   }
 }
 
-
+//
 // ======================== CHI TIẾT XE ========================
+//
 
 class VehicleDetailScreen extends StatefulWidget {
   final Map<String, dynamic> vehicle;
@@ -150,12 +169,32 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
+
+      // AppBar gradient
       appBar: AppBar(
-        title: const Text("Chi tiết phương tiện"),
+        elevation: 0,
+        toolbarHeight: 65,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF0099FF),
+                Color(0xFF00CC99),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: const Text(
+          "Chi tiết phương tiện",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Container(
@@ -192,7 +231,7 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                           horizontal: 18, vertical: 6),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFF0099FF), Color(0xFF00CC99)],
+                          colors: [primaryColor, secondaryColor],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -211,15 +250,11 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
 
               const SizedBox(height: 28),
               const Divider(),
-
               const SizedBox(height: 14),
 
-              // ----------- Số E-Tag -----------
               _infoRow(Icons.nfc_rounded, "Số E-Tag", widget.vehicle['etag']),
-
               const SizedBox(height: 16),
 
-              // ----------- Trạng thái phương tiện (Switch) -----------
               Row(
                 children: [
                   Icon(Icons.power_settings_new_rounded,
@@ -228,8 +263,8 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                   const Expanded(
                     child: Text(
                       "Trạng thái phương tiện",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 16),
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                     ),
                   ),
                   Switch(
@@ -238,16 +273,13 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                     activeTrackColor: secondaryColor,
                     inactiveThumbColor: Colors.grey.shade200,
                     inactiveTrackColor: Colors.grey.shade400,
-                    onChanged: (v) {
-                      setState(() => isActive = v);
-                    },
+                    onChanged: (v) => setState(() => isActive = v),
                   ),
                 ],
               ),
 
               const SizedBox(height: 16),
 
-              // ----------- Trạng thái E-Tag (chỉ hiển thị) -----------
               Row(
                 children: [
                   const Icon(Icons.verified_rounded,
@@ -256,8 +288,8 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                   const Expanded(
                     child: Text(
                       "Trạng thái E-Tag",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 16),
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                     ),
                   ),
                   Text(
@@ -276,17 +308,14 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
               const SizedBox(height: 32),
               const Divider(),
 
-              // ----------- Nút lưu -----------
               GestureDetector(
                 onTap: () {
-                  setState(() {
-                    widget.vehicle['status'] = isActive;
-                  });
+                  setState(() => widget.vehicle['status'] = isActive);
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        "Đã lưu trạng thái: ${isActive ? "Hoạt động" : "Không hoạt động"}",
-                      ),
+                          "Đã lưu trạng thái: ${isActive ? "Hoạt động" : "Không hoạt động"}"),
                     ),
                   );
                 },
@@ -294,26 +323,17 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [primaryColor, secondaryColor],
-                    ),
+                    gradient:
+                        LinearGradient(colors: [primaryColor, secondaryColor]),
                     borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryColor.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
                   ),
                   alignment: Alignment.center,
                   child: const Text(
                     "Lưu thay đổi",
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -327,18 +347,18 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
   Widget _infoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, color: primaryColor, size: 26),
+        Icon(icon, color: const Color(0xFF0099FF), size: 26),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, fontSize: 16),
+            style:
+                const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           ),
         ),
         Text(
           value,
-          style: const TextStyle(fontSize: 16, color: Colors.black87),
+          style: const TextStyle(color: Colors.black87, fontSize: 16),
         ),
       ],
     );
@@ -348,6 +368,7 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
 //
 // ======================== THÊM PHƯƠNG TIỆN ========================
 //
+
 class AddVehicleScreen extends StatefulWidget {
   const AddVehicleScreen({super.key});
 
@@ -360,7 +381,8 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
   final TextEditingController _plateController = TextEditingController();
   final TextEditingController _etagController = TextEditingController();
 
-  String? _selectedType; // để mặc định là null -> hiển thị “Chọn loại phương tiện”
+  String? _selectedType;
+
   final Color primaryColor = const Color(0xFF0099FF);
   final Color secondaryColor = const Color(0xFF00CC99);
 
@@ -368,12 +390,32 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
+
+      // Gradient AppBar
       appBar: AppBar(
-        title: const Text("Thêm phương tiện"),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
+        toolbarHeight: 65,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF0099FF),
+                Color(0xFF00CC99),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: const Text(
+          "Thêm phương tiện",
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -382,17 +424,20 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
             children: [
               TextFormField(
                 controller: _plateController,
-                decoration:
-                _inputDecoration("Biển số xe", Icons.directions_car_rounded),
-                validator: (v) => v!.isEmpty ? "Nhập biển số xe" : null,
+                decoration: _inputDecoration(
+                    "Biển số xe", Icons.directions_car_rounded),
+                validator: (v) =>
+                    v!.isEmpty ? "Nhập biển số xe" : null,
               ),
 
               const SizedBox(height: 16),
-              const Text("Loại phương tiện",
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+              const Text(
+                "Loại phương tiện",
+                style:
+                    TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
               const SizedBox(height: 8),
 
-              // Dropdown đẹp + xổ xuống dưới
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
@@ -400,9 +445,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2))
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    )
                   ],
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -414,17 +460,19 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                     icon: const Icon(Icons.arrow_drop_down_rounded, size: 30),
                     isExpanded: true,
                     dropdownColor: Colors.white,
-                    menuMaxHeight: 200, // ép dropdown xổ xuống
+                    menuMaxHeight: 200,
                     items: ['Xe hơi', 'Xe tải']
-                        .map((type) => DropdownMenuItem(
-                      value: type,
-                      child: Padding(
-                        padding:
-                        const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text(type,
-                            style: const TextStyle(fontSize: 16)),
-                      ),
-                    ))
+                        .map(
+                          (type) => DropdownMenuItem(
+                            value: type,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0),
+                              child: Text(type,
+                                  style: const TextStyle(fontSize: 16)),
+                            ),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) => setState(() => _selectedType = v),
                   ),
@@ -450,7 +498,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
                     gradient:
-                    LinearGradient(colors: [primaryColor, secondaryColor]),
+                        LinearGradient(colors: [primaryColor, secondaryColor]),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   alignment: Alignment.center,
