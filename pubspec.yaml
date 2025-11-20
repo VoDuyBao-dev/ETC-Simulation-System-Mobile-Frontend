@@ -20,6 +20,9 @@ dependencies:
   #  Dùng để gọi API
   http: ^1.2.2
 
+  webview_flutter: ^4.4.2
+  flutter_secure_storage: ^9.0.0
+
   #  Quản lý trạng thái (giúp lưu và chia sẻ dữ liệu giữa các màn hình)
   provider: ^6.1.2
 

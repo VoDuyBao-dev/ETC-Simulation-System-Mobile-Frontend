@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smarttoll_app/models/user.dart';
+import 'package:smarttoll_app/models/auth_service.dart';
 
 class ApiService {
   static const String baseUrl = "http://10.0.2.2:8080/etc";
@@ -28,6 +30,11 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("accessToken");
     accessToken = null;
+  }
+
+  static Future<void> logout() async {
+    await clearToken();
+    AuthService.clearUser(); // 🔑 Xóa user đồng bộ
   }
 
   // ======================== VERIFY OTP ======================
@@ -66,18 +73,25 @@ class ApiService {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "username": username,
-          "password": password,
-        }),
+        body: jsonEncode({"username": username, "password": password}),
       );
 
       final data = jsonDecode(response.body);
 
       if (data["code"] == 200 && data["result"] != null) {
         String token = data["result"]["token"];
-        await saveToken(token); // Lưu token đúng cách
-        print("TOKEN LƯU THÀNH CÔNG: $token");
+        await saveToken(token);
+
+        final userJson = data["result"];
+        final User loggedInUser = User(
+          id: userJson["id"]?.toString() ?? "0",
+          username: userJson["username"] ?? username,
+          fullName: userJson["fullname"] ?? "",
+          email: userJson["email"] ?? "",
+          balance: double.tryParse(userJson["balance"]?.toString() ?? "0") ?? 0.0,
+        );
+
+        AuthService.setUser(loggedInUser); // 🔑 Cập nhật user
       }
 
       return data;
@@ -202,5 +216,45 @@ class ApiService {
         'description': 'Quản lý thông tin cá nhân'
       },
     ];
+  }
+
+  static Future<Map<String, dynamic>> createVNPAYPayment({
+    required String amount,
+    String? bankCode,
+  }) async {
+    await loadToken();
+
+    if (accessToken == null) {
+      return {"code": 401, "message": "Chưa đăng nhập (token null)"};
+    }
+
+    try {
+      // Tạo query params
+      final queryParams = {
+        "amount": amount,
+        if (bankCode != null && bankCode.isNotEmpty) "bankCode": bankCode,
+      };
+
+      // Tạo URI với query params
+      final uri = Uri.parse("$baseUrl/payment/vn-pay")
+          .replace(queryParameters: queryParams);
+
+      final response = await http.get(
+        uri,
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      return data; // Trả về đúng format backend trả
+    } catch (e) {
+      return {
+        "code": 500,
+        "message": "Không thể kết nối tới server: ${e.toString()}"
+      };
+    }
   }
 }
