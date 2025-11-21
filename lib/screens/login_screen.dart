@@ -46,9 +46,18 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         // ------------ CHUYỂN TRANG HOME ------------
-        if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeLoggedScreen(
+              userData: {
+                "name": result["fullname"] ?? "User",
+                "email": result["email"] ?? _accountController.text,
+                "balance": result["balance"]?.toString() ?? "0",
+              },
+            ),
+          ),
+        );
       } else {
         _showError(response['message'] ?? 'Sai tài khoản hoặc mật khẩu');
       }
