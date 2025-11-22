@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // ------------ LƯU TOKEN CHO TOÀN APP ------------
         final result = response["result"];
-        ApiService.accessToken = result["accessToken"];   // TOKEN BACKEND TRẢ VỀ
+        ApiService.accessToken = result["token"];   // TOKEN BACKEND TRẢ VỀ
 
         // ------------ THÔNG BÁO ------------
         ScaffoldMessenger.of(context).showSnackBar(
@@ -49,13 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomeLoggedScreen(
-              userData: {
-                "name": result["fullname"] ?? "User",
-                "email": result["email"] ?? _accountController.text,
-                "balance": result["balance"]?.toString() ?? "0",
-              },
-            ),
+              builder: (_) => const HomeLoggedScreen(),
           ),
         );
       } else {

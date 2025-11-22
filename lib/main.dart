@@ -19,11 +19,11 @@ class SmartTollApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SmartToll App',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.grey[100],
+        fontFamily: 'Roboto',
       ),
       home: const HomeScreen(),
-
 
       routes: {
         '/home': (context) => const HomeScreen(),
@@ -31,11 +31,18 @@ class SmartTollApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
 
         '/otp': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-          as Map<String, dynamic>?;
+          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          final email = (args?['email'] as String?)?.trim() ?? '';
 
-          final email = args?['email'] ?? 'demo@example.com';
-          return OtpScreen(email: email);
+          if (email.isEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Không có email để xác minh")));
+              Navigator.pushReplacementNamed(context, '/login');
+            });
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+
+          return OtpScreen(email: email); // Chỉ cần email!
         },
       },
     );

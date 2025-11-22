@@ -257,4 +257,163 @@ class ApiService {
       };
     }
   }
+
+  // ==================== GET WALLET BALANCE ====================
+  static Future<double> getWalletBalance() async {
+    await loadToken();
+
+    if (accessToken == null) {
+      return 0.0;
+    }
+
+    final url = Uri.parse("$baseUrl/customer/wallet");
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data['code'] == 200 && data['result'] != null) {
+        return double.tryParse(data['result'].toString()) ?? 0.0;
+      }
+
+      return 0.0;
+    } catch (e) {
+      print("Lỗi lấy số dư ví: $e");
+      return 0.0;
+    }
+  }
+
+  /// Lấy lịch sử nạp tiền
+  static Future<List<Map<String, dynamic>>> getRechargeHistory({
+    int page = 0,
+    int size = 10,
+  }) async {
+    await loadToken();
+
+    if (accessToken == null) {
+      return [];
+    }
+
+    final uri = Uri.parse("$baseUrl/customer/topup/history")
+        .replace(queryParameters: {
+      "page": page.toString(),
+      "size": size.toString(),
+    });
+
+    try {
+      final response = await http.get(
+        uri,
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data["code"] == 200 && data["result"]?["content"] != null) {
+        final List<dynamic> content = data["result"]["content"];
+        return content.map((item) {
+          final double amount = (item["amount"] is num)
+              ? item["amount"].toDouble()
+              : double.tryParse(item["amount"].toString()) ?? 0.0;
+
+          final double balanceAfter = item["balanceAfter"] != null
+              ? (item["balanceAfter"] is num
+              ? item["balanceAfter"].toDouble()
+              : double.tryParse(item["balanceAfter"].toString()) ?? 0.0)
+              : amount; // fallback nếu không có balanceAfter
+
+          final String createdAt = item["createdAt"] ?? "";
+          final DateTime dateTime = DateTime.tryParse(createdAt) ?? DateTime.now();
+
+          return {
+            "amount": amount,
+            "balanceAfter": balanceAfter,
+            "method": item["method"] ?? "VNPAY",
+            "dateTime": dateTime,
+          };
+        }).toList();
+      }
+
+      return [];
+    } catch (e) {
+      print("Lỗi lấy lịch sử nạp tiền: $e");
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getTransactionHistory({
+    int page = 0,
+    int size = 20,
+  }) async {
+    await loadToken();
+
+    if (accessToken == null) {
+      return [];
+    }
+
+    final uri = Uri.parse("$baseUrl/customer/wallet/history").replace(
+      queryParameters: {
+        "page": page.toString(),
+        "size": size.toString(),
+      },
+    );
+
+    try {
+      final response = await http.get(
+        uri,
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode != 200) {
+        return [];
+      }
+
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+
+      if (data["code"] == 200 && data["result"]?["content"] != null) {
+        final List<dynamic> content = data["result"]["content"];
+
+        return content.map((item) {
+          final double amount = (item["amount"] is num)
+              ? item["amount"].toDouble()
+              : double.tryParse(item["amount"].toString()) ?? 0.0;
+
+          final double balanceAfter = item["balanceAfter"] != null
+              ? (item["balanceAfter"] is num
+              ? item["balanceAfter"].toDouble()
+              : double.tryParse(item["balanceAfter"].toString()) ?? 0.0)
+              : 0.0;
+
+          final String dateTimeStr = item["dateTime"] ?? "";
+          final DateTime dateTime = DateTime.tryParse(dateTimeStr.replaceAll(" ", "T")) ?? DateTime.now();
+
+          return {
+            "amount": amount.abs(),
+            "balanceAfter": balanceAfter,
+            "stationName": item["stationName"]?.toString() ?? "Không rõ trạm",
+            "description": item["description"]?.toString() ?? "Trừ phí qua trạm",
+            "plateNumber": item["plateNumber"]?.toString() ?? "",
+            "dateTime": dateTime,
+          };
+        }).toList();
+      }
+
+      return [];
+    } catch (e) {
+      print("Lỗi lấy lịch sử giao dịch qua trạm: $e");
+      return [];
+    }
+  }
 }
