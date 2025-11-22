@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smarttoll_app/models/user.dart';
+import 'package:smarttoll_app/models/auth_service.dart';
 import '../models/vehicle.dart';
 
 
@@ -30,6 +32,11 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("accessToken");
     accessToken = null;
+  }
+
+  static Future<void> logout() async {
+    await clearToken();
+    AuthService.clearUser(); // 🔑 Xóa user đồng bộ
   }
 
   // ======================== VERIFY OTP ======================
@@ -68,18 +75,25 @@ class ApiService {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "username": username,
-          "password": password,
-        }),
+        body: jsonEncode({"username": username, "password": password}),
       );
 
       final data = jsonDecode(response.body);
 
       if (data["code"] == 200 && data["result"] != null) {
         String token = data["result"]["token"];
-        await saveToken(token); // Lưu token đúng cách
-        print("TOKEN LƯU THÀNH CÔNG: $token");
+        await saveToken(token);
+
+        final userJson = data["result"];
+        final User loggedInUser = User(
+          id: userJson["id"]?.toString() ?? "0",
+          username: userJson["username"] ?? username,
+          fullName: userJson["fullname"] ?? "",
+          email: userJson["email"] ?? "",
+          balance: double.tryParse(userJson["balance"]?.toString() ?? "0") ?? 0.0,
+        );
+
+        AuthService.setUser(loggedInUser); // 🔑 Cập nhật user
       }
 
       return data;
@@ -206,6 +220,204 @@ class ApiService {
     ];
   }
 
+  static Future<Map<String, dynamic>> createVNPAYPayment({
+    required String amount,
+    String? bankCode,
+  }) async {
+    await loadToken();
+
+    if (accessToken == null) {
+      return {"code": 401, "message": "Chưa đăng nhập (token null)"};
+    }
+
+    try {
+      // Tạo query params
+      final queryParams = {
+        "amount": amount,
+        if (bankCode != null && bankCode.isNotEmpty) "bankCode": bankCode,
+      };
+
+      // Tạo URI với query params
+      final uri = Uri.parse("$baseUrl/payment/vn-pay")
+          .replace(queryParameters: queryParams);
+
+      final response = await http.get(
+        uri,
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      return data; // Trả về đúng format backend trả
+    } catch (e) {
+      return {
+        "code": 500,
+        "message": "Không thể kết nối tới server: ${e.toString()}"
+      };
+    }
+  }
+
+  // ==================== GET WALLET BALANCE ====================
+  static Future<double> getWalletBalance() async {
+    await loadToken();
+
+    if (accessToken == null) {
+      return 0.0;
+    }
+
+    final url = Uri.parse("$baseUrl/customer/wallet");
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data['code'] == 200 && data['result'] != null) {
+        return double.tryParse(data['result'].toString()) ?? 0.0;
+      }
+
+      return 0.0;
+    } catch (e) {
+      print("Lỗi lấy số dư ví: $e");
+      return 0.0;
+    }
+  }
+
+  /// Lấy lịch sử nạp tiền
+  static Future<List<Map<String, dynamic>>> getRechargeHistory({
+    int page = 0,
+    int size = 10,
+  }) async {
+    await loadToken();
+
+    if (accessToken == null) {
+      return [];
+    }
+
+    final uri = Uri.parse("$baseUrl/customer/topup/history")
+        .replace(queryParameters: {
+      "page": page.toString(),
+      "size": size.toString(),
+    });
+
+    try {
+      final response = await http.get(
+        uri,
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data["code"] == 200 && data["result"]?["content"] != null) {
+        final List<dynamic> content = data["result"]["content"];
+        return content.map((item) {
+          final double amount = (item["amount"] is num)
+              ? item["amount"].toDouble()
+              : double.tryParse(item["amount"].toString()) ?? 0.0;
+
+          final double balanceAfter = item["balanceAfter"] != null
+              ? (item["balanceAfter"] is num
+              ? item["balanceAfter"].toDouble()
+              : double.tryParse(item["balanceAfter"].toString()) ?? 0.0)
+              : amount; // fallback nếu không có balanceAfter
+
+          final String createdAt = item["createdAt"] ?? "";
+          final DateTime dateTime = DateTime.tryParse(createdAt) ?? DateTime.now();
+
+          return {
+            "amount": amount,
+            "balanceAfter": balanceAfter,
+            "method": item["method"] ?? "VNPAY",
+            "dateTime": dateTime,
+          };
+        }).toList();
+      }
+
+      return [];
+    } catch (e) {
+      print("Lỗi lấy lịch sử nạp tiền: $e");
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getTransactionHistory({
+    int page = 0,
+    int size = 20,
+  }) async {
+    await loadToken();
+
+    if (accessToken == null) {
+      return [];
+    }
+
+    final uri = Uri.parse("$baseUrl/customer/wallet/history").replace(
+      queryParameters: {
+        "page": page.toString(),
+        "size": size.toString(),
+      },
+    );
+
+    try {
+      final response = await http.get(
+        uri,
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode != 200) {
+        return [];
+      }
+
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+
+      if (data["code"] == 200 && data["result"]?["content"] != null) {
+        final List<dynamic> content = data["result"]["content"];
+
+        return content.map((item) {
+          final double amount = (item["amount"] is num)
+              ? item["amount"].toDouble()
+              : double.tryParse(item["amount"].toString()) ?? 0.0;
+
+          final double balanceAfter = item["balanceAfter"] != null
+              ? (item["balanceAfter"] is num
+              ? item["balanceAfter"].toDouble()
+              : double.tryParse(item["balanceAfter"].toString()) ?? 0.0)
+              : 0.0;
+
+          final String dateTimeStr = item["dateTime"] ?? "";
+          final DateTime dateTime = DateTime.tryParse(dateTimeStr.replaceAll(" ", "T")) ?? DateTime.now();
+
+          return {
+            "amount": amount.abs(),
+            "balanceAfter": balanceAfter,
+            "stationName": item["stationName"]?.toString() ?? "Không rõ trạm",
+            "description": item["description"]?.toString() ?? "Trừ phí qua trạm",
+            "plateNumber": item["plateNumber"]?.toString() ?? "",
+            "dateTime": dateTime,
+          };
+        }).toList();
+      }
+
+      return [];
+    } catch (e) {
+      print("Lỗi lấy lịch sử giao dịch qua trạm: $e");
+      return [];
+    }
+  }
   // HEADER (thêm Bearer token)
   Future<Map<String, String>> _getHeaders() async {
     if (accessToken == null) {

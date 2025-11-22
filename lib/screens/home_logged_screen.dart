@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import '../api/api_service.dart';
 import 'all_services_screen.dart';
+import 'package:smarttoll_app/screens/recharge_screen.dart';
+import '../models/user.dart';
+import '../models/auth_service.dart';
+import 'package:intl/intl.dart';
+import 'vehicle_screen.dart';
+import 'dart:ui' as ui show TextDirection;
+
+
 
 class HomeLoggedScreen extends StatefulWidget {
-  final Map<String, dynamic> userData;
 
-  const HomeLoggedScreen({super.key, required this.userData});
+  const HomeLoggedScreen({super.key});
 
   @override
   State<HomeLoggedScreen> createState() => _HomeLoggedScreenState();
@@ -13,14 +20,57 @@ class HomeLoggedScreen extends StatefulWidget {
 
 class _HomeLoggedScreenState extends State<HomeLoggedScreen> {
   List<dynamic> _services = [];
+  bool _isLoadingUser = true;
   bool _isLoading = true;
   String? _error;
+  User? currentUser;
 
   @override
   void initState() {
     super.initState();
     _loadServices();
+    _loadCurrentUser();
   }
+
+  Future<void> _loadCurrentUser() async {
+    try {
+      // Gọi song song 2 API để nhanh hơn
+      final results = await Future.wait([
+        ApiService.getMyInfo(),        // trả về userId, fullname, email...
+        ApiService.getWalletBalance(), // trả về số dư
+      ]);
+
+      final userInfo = results[0] as Map<String, dynamic>;
+      final balance = results[1] as double;
+
+      if (userInfo['code'] == 200 && userInfo['result'] != null) {
+        final data = userInfo['result'];
+
+        final user = User(
+          id: data['userId']?.toString() ?? '0',
+          username: data['username'] ?? data['email'] ?? 'unknown',
+          fullName: data['fullname'] ?? 'Người dùng',
+          email: data['email'] ?? '',
+          balance: balance,
+        );
+
+        setState(() {
+          currentUser = user;
+          _isLoadingUser = false;
+        });
+
+        // Cache lại để các màn khác dùng
+        AuthService.setUser(user);
+      }
+    } catch (e) {
+      print("Lỗi load user: $e");
+      setState(() => _isLoadingUser = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Không tải được thông tin cá nhân")),
+      );
+    }
+  }
+
 
   Future<void> _loadServices() async {
     try {
@@ -95,7 +145,7 @@ class _HomeLoggedScreenState extends State<HomeLoggedScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Xin chào, ${widget.userData['name'] ?? 'Người dùng'} 👋",
+                          "Xin chào, ${currentUser?.fullName ?? 'Người dùng'} 👋",
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -132,10 +182,40 @@ class _HomeLoggedScreenState extends State<HomeLoggedScreen> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  _menuItem(Icons.account_balance_wallet, "Nạp tiền"),
+
+                  GestureDetector(
+                    onTap: () {
+                      if (currentUser == null) {
+                        // Chưa load xong user
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Đang tải thông tin...')),
+                        );
+                        return;
+                      }
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RechargeScreen()),
+                      ).then((_) {
+                        // Refresh lại user sau khi nạp tiền
+                        _loadCurrentUser();
+                      });
+                    },
+                    child: _menuItem(Icons.account_balance_wallet, "Nạp tiền"),
+                  ),
                   _menuItem(Icons.confirmation_num, "Mua vé tháng"),
                   _menuItem(Icons.link, "Liên kết\nngân hàng", isNew: true),
-                  _menuItem(Icons.directions_car, "Quản lý xe"),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const VehicleScreen()),
+                      );
+                    },
+                    child: _menuItem(Icons.directions_car, "Quản lý xe"),
+                  ),
+
                   _menuItem(Icons.shield, "Bảo hiểm\nTNDS", isNew: true),
                   _menuItem(Icons.emergency, "Cứu hộ\ntoàn quốc", isNew: true),
                   _menuItem(Icons.card_giftcard, "Smart Loyalty", isNew: true),
@@ -146,8 +226,7 @@ class _HomeLoggedScreenState extends State<HomeLoggedScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              AllServicesScreen(userData: widget.userData),
+                          builder: (_) => const AllServicesScreen(),
                         ),
                       );
                     },
@@ -273,19 +352,48 @@ class _HomeLoggedScreenState extends State<HomeLoggedScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                widget.userData['name'] ?? 'Người dùng',
+                currentUser?.fullName ?? 'Người dùng',
                 style: const TextStyle(
                     fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              Text(widget.userData['email'] ?? '',
+              Text(currentUser?.email ?? '',
                   style: const TextStyle(color: Colors.grey)),
               const SizedBox(height: 16),
-              Text(
-                "Số dư: ${widget.userData['balance']} VNĐ",
-                style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.teal,
-                    fontWeight: FontWeight.w600),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: "Số dư: ",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    TextSpan(
+                      text: currentUser?.balance == null
+                          ? "0 VND"
+                          : NumberFormat.currency(
+                        locale: 'vi_VN',
+                        symbol: '',
+                        decimalDigits: 0,
+                      ).format(currentUser!.balance),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Color(0xFF00CC99),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const TextSpan(
+                      text: " VND",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF00CC99),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton.icon(
@@ -481,6 +589,7 @@ class _SmartTollCarPainter extends CustomPainter {
     canvas.drawCircle(
         Offset(dx + scaledWidth * 0.7, dy + scaledHeight * 0.87), 12, rimPaint);
 
+
     final textPainter = TextPainter(
       text: const TextSpan(
         text: "SmartToll",
@@ -490,7 +599,7 @@ class _SmartTollCarPainter extends CustomPainter {
           color: Colors.white,
         ),
       ),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr, // Dùng ui.TextDirection
     )..layout(maxWidth: scaledWidth);
     textPainter.paint(
         canvas,

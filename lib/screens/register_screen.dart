@@ -54,7 +54,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Navigator.pushReplacementNamed(
             context,
             '/otp',
-            arguments: {'email': _emailController.text.trim()},
+            arguments: {
+              'email': _emailController.text.trim()
+            },
           );
         });
       } else {

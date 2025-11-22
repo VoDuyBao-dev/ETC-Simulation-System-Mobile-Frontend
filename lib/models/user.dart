@@ -1,22 +1,55 @@
 class User {
-  final int id;
-  final String name;
+  final String id;          // luôn là String để backend kiểu số cũng không lỗi
+  final String? username;   // từ bản 2
+  final String? name;       // từ bản 1
   final String email;
-  final double balance;
+  final String? fullName;   // từ bản 2
+  final double balance;     // từ bản 1
 
   User({
     required this.id,
-    required this.name,
     required this.email,
-    required this.balance,
+    this.username,
+    this.name,
+    this.fullName,
+    this.balance = 0,
   });
+
+  User copyWith({
+    String? id,
+    String? username,
+    String? name,
+    String? email,
+    String? fullName,
+    double? balance,
+  }) {
+    return User(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      balance: balance ?? this.balance,
+    );
+  }
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? 'No Name',
+      id: json['id']?.toString() ?? '0',
+
+      // Có backend dùng "name", có backend dùng "username"
+      username: json['username'] as String?,
+      name: json['name'] as String?,
+
       email: json['email'] ?? '',
-      balance: (json['balance'] ?? 0).toDouble(),
+
+      // full name có thể null
+      fullName: json['fullName'] as String?,
+
+      // balance từ API có thể int hoặc double hoặc null
+      balance: (json['balance'] != null)
+          ? double.tryParse(json['balance'].toString()) ?? 0
+          : 0,
     );
   }
 }

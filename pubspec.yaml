@@ -20,6 +20,9 @@ dependencies:
   #  Dùng để gọi API
   http: ^1.2.2
 
+  webview_flutter: ^4.4.2
+  flutter_secure_storage: ^9.0.0
+
   #  Quản lý trạng thái (giúp lưu và chia sẻ dữ liệu giữa các màn hình)
   provider: ^6.1.2
 
@@ -34,6 +37,7 @@ dependencies:
   intl: ^0.18.1
 
 dev_dependencies:
+  webview_flutter: ^4.7.0
   flutter_test:
     sdk: flutter
 
@@ -45,5 +49,4 @@ flutter:
   #  Thêm thư mục assets nếu có hình ảnh hoặc file JSON
   assets:
     - assets/images/
-    - assets/icons/
     - assets/images/avatar.png

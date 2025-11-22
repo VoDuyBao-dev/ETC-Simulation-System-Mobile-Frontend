@@ -6,9 +6,8 @@ import 'package:smarttoll_app/screens/transaction_history_screen.dart';
 import 'profile_screen.dart';
 
 class AllServicesScreen extends StatefulWidget {
-  final Map<String, dynamic> userData;
 
-  const AllServicesScreen({super.key, required this.userData});
+  const AllServicesScreen({super.key});
 
   @override
   State<AllServicesScreen> createState() => _AllServicesScreenState();
