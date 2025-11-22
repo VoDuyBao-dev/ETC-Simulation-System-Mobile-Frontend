@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smarttoll_app/models/user.dart';
 import 'package:smarttoll_app/models/auth_service.dart';
+import '../models/vehicle.dart';
+
 
 class ApiService {
   static const String baseUrl = "http://10.0.2.2:8080/etc";
@@ -414,6 +416,140 @@ class ApiService {
     } catch (e) {
       print("Lỗi lấy lịch sử giao dịch qua trạm: $e");
       return [];
+    }
+  }
+  // HEADER (thêm Bearer token)
+  Future<Map<String, String>> _getHeaders() async {
+    if (accessToken == null) {
+      await ApiService.loadToken();
+    }
+
+    if (accessToken == null) {
+      throw Exception("Không có token. Người dùng chưa đăng nhập.");
+    }
+
+    return {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $accessToken"
+    };
+  }
+
+  // HANDLE ERROR
+  Exception _handleError(http.Response response) {
+    try {
+      final body = jsonDecode(response.body);
+      final msg = body["message"] ?? body["error"] ?? "Lỗi không xác định";
+
+      return Exception("Lỗi ${response.statusCode}: $msg");
+    } catch (_) {
+      return Exception("Lỗi ${response.statusCode}: ${response.reasonPhrase}");
+    }
+  }
+
+  // GET - Lấy danh sách xe
+  Future<List<dynamic>> getVehicles() async {
+    try {
+      final headers = await _getHeaders();
+
+      final response = await http.get(
+        Uri.parse("$baseUrl/user/vehicles"),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+
+        if (body is List) {
+          return body;
+        } else {
+          throw Exception("Dữ liệu trả về không phải dạng danh sách.");
+        }
+      } else {
+        throw _handleError(response);
+      }
+    } catch (e) {
+      print("❌ Lỗi gọi API getVehicles: $e");
+      throw Exception("Không thể tải danh sách xe. Lỗi: $e");
+    }
+  }
+
+  Future<bool> addVehicle({
+    required String plateNumber,
+    required String vehicleType,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+
+      final body = {
+        "plateNumber": plateNumber,
+        "vehicleType": vehicleType,
+        "tagUid": "",
+        "tagStatus": "ACTIVE",
+        "vehicleStatus": "ACTIVE",
+      };
+
+      final response = await http.post(
+        Uri.parse("$baseUrl/user/vehicles/register"),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        throw _handleError(response);
+      }
+    } catch (e) {
+      print("❌ addVehicle error: $e");
+      throw Exception("Không thể thêm xe. Lỗi: $e");
+    }
+  }
+
+
+  Future<Map<String, dynamic>> updateVehicleStatus(
+      String vehicleId, bool active) async {
+    try {
+      final headers = await _getHeaders();
+      final body = {
+        "status": active ? "ACTIVE" : "INACTIVE",
+      };
+
+      final response = await http.put(
+        Uri.parse("$baseUrl/user/vehicles/$vehicleId/status"),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw _handleError(response);
+      }
+    } catch (e) {
+      print("❌ updateVehicleStatus error: $e");
+      throw Exception("Không thể cập nhật trạng thái xe: $e");
+    }
+  }
+
+// UPDATE RFID TAG STATUS — chỉ đổi tagStatus
+  Future<Map<String, dynamic>> updateRfidTagStatus(String vehicleId) async {
+    try {
+      final headers = await _getHeaders();
+
+      final response = await http.put(
+        Uri.parse("$baseUrl/user/vehicles/$vehicleId/status-rfidTtag"),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw _handleError(response);
+      }
+    } catch (e) {
+      print("❌ updateRfidTagStatus error: $e");
+      throw Exception("Không thể cập nhật trạng thái E-Tag: $e");
     }
   }
 }

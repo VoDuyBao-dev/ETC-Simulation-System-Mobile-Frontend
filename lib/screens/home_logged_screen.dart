@@ -5,6 +5,7 @@ import 'package:smarttoll_app/screens/recharge_screen.dart';
 import '../models/user.dart';
 import '../models/auth_service.dart';
 import 'package:intl/intl.dart';
+import 'vehicle_screen.dart';
 import 'dart:ui' as ui show TextDirection;
 
 
@@ -205,7 +206,16 @@ class _HomeLoggedScreenState extends State<HomeLoggedScreen> {
                   ),
                   _menuItem(Icons.confirmation_num, "Mua vé tháng"),
                   _menuItem(Icons.link, "Liên kết\nngân hàng", isNew: true),
-                  _menuItem(Icons.directions_car, "Quản lý xe"),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const VehicleScreen()),
+                      );
+                    },
+                    child: _menuItem(Icons.directions_car, "Quản lý xe"),
+                  ),
+
                   _menuItem(Icons.shield, "Bảo hiểm\nTNDS", isNew: true),
                   _menuItem(Icons.emergency, "Cứu hộ\ntoàn quốc", isNew: true),
                   _menuItem(Icons.card_giftcard, "Smart Loyalty", isNew: true),
