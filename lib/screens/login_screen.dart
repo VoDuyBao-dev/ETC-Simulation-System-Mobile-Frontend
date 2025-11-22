@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // ------------ LƯU TOKEN CHO TOÀN APP ------------
         final result = response["result"];
-        ApiService.accessToken = result["accessToken"];   // TOKEN BACKEND TRẢ VỀ
+        ApiService.accessToken = result["token"];   // TOKEN BACKEND TRẢ VỀ
 
         // ------------ THÔNG BÁO ------------
         ScaffoldMessenger.of(context).showSnackBar(
@@ -46,9 +46,12 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         // ------------ CHUYỂN TRANG HOME ------------
-        if (mounted) {
-          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (_) => const HomeLoggedScreen(),
+          ),
+        );
       } else {
         _showError(response['message'] ?? 'Sai tài khoản hoặc mật khẩu');
       }

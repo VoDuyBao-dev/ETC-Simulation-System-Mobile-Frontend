@@ -15,6 +15,24 @@ class User {
     this.balance = 0,
   });
 
+  User copyWith({
+    String? id,
+    String? username,
+    String? name,
+    String? email,
+    String? fullName,
+    double? balance,
+  }) {
+    return User(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      balance: balance ?? this.balance,
+    );
+  }
+
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id']?.toString() ?? '0',

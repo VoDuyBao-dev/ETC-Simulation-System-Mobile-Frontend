@@ -5,17 +5,10 @@ import 'screens/register_screen.dart';
 import 'screens/otp_screen.dart';
 import 'screens/recharge_screen.dart';
 import 'screens/vehicle_screen.dart';
-import 'screens/topup_screen.dart';
-import 'package:smarttoll_app/models/auth_service.dart';
-import 'package:smarttoll_app/api/api_service.dart';
 
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await ApiService.loadToken();
+void main() {
   runApp(const SmartTollApp());
 }
-
 
 class SmartTollApp extends StatelessWidget {
   const SmartTollApp({super.key});
@@ -26,11 +19,11 @@ class SmartTollApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SmartToll App',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.grey[100],
+        fontFamily: 'Roboto',
       ),
       home: const HomeScreen(),
-
 
       routes: {
         '/home': (context) => const HomeScreen(),
@@ -38,25 +31,20 @@ class SmartTollApp extends StatelessWidget {
         '/register': (context) => const RegisterScreen(),
 
         '/otp': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-          as Map<String, dynamic>?;
+          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          final email = (args?['email'] as String?)?.trim() ?? '';
 
-          final email = args?['email'] ?? 'demo@example.com';
-          return OtpScreen(email: email);
-        },
-
-        '/topup': (context) {
-          if (AuthService.currentUser == null) {
-            // Chưa đăng nhập → đẩy về login
-            return const LoginScreen();
+          if (email.isEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Không có email để xác minh")));
+              Navigator.pushReplacementNamed(context, '/login');
+            });
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
-          return TopupScreen(user: AuthService.currentUser!);
+
+          return OtpScreen(email: email); // Chỉ cần email!
         },
-
-
       },
-
-
     );
   }
 }

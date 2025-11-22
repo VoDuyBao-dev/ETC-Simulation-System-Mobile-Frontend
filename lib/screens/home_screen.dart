@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smarttoll_app/api/api_service.dart';
-import 'package:smarttoll_app/models/user.dart';
-import 'package:smarttoll_app/models/auth_service.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,71 +14,10 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   String? _error;
 
-  User? currentUser;
-  bool _isUserLoading = true;
-
   @override
   void initState() {
     super.initState();
-
     _loadServices();
-
-    // Lắng nghe user stream
-    AuthService.userStream.listen((user) {
-      if (!mounted) return;
-      setState(() {
-        currentUser = user;
-        _isUserLoading = false;
-      });
-    });
-
-    // Lần đầu load thông tin user
-    _checkAuthStatus();
-  }
-
-  Future<void> _checkAuthStatus() async {
-    setState(() => _isUserLoading = true);
-    final res = await ApiService.getMyInfo();
-    if (res['code'] == 200 && res['result'] != null) {
-      final data = res['result'];
-      final user = User.fromJson(data); // tốt nhất nên có fromJson
-      AuthService.setUser(user);
-    } else {
-      AuthService.clearUser();
-    }
-  }
-
-  Future<void> _loadCurrentUser() async {
-    setState(() => _isUserLoading = true);
-
-    final res = await ApiService.getMyInfo();
-
-    if (res['code'] == 200 && res['result'] != null) {
-      final data = res['result'];
-
-      final User user = User(
-        id: data['id']?.toString() ?? '0',
-        username: data['username'] ?? 'unknown',
-        fullName: data['fullname'],
-        email: data['email'] ?? '',
-        balance: (data['balance'] != null)
-            ? double.tryParse(data['balance'].toString()) ?? 0.0
-            : 0.0,
-      );
-
-      setState(() {
-        currentUser = user;
-        AuthService.setUser(user);
-        _isUserLoading = false;
-      });
-    } else {
-      setState(() {
-        currentUser = null;
-        AuthService.clearUser();
-        _isUserLoading = false;
-      });
-      print("Chưa đăng nhập hoặc lỗi: ${res['message']}");
-    }
   }
 
   Future<void> _loadServices() async {
@@ -94,26 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
         _error = e.toString();
         _isLoading = false;
       });
-    }
-  }
-
-  // ✅ HÀM XỬ LÝ NẠP TIỀN - FIX HOÀN TOÀN
-  void _handleTopup() {
-    print("🔍 Kiểm tra trạng thái đăng nhập:");
-    print("   - currentUser (local): $currentUser");
-    print("   - AuthService.currentUser: ${AuthService.currentUser}");
-    print("   - AuthService.isLoggedIn: ${AuthService.isLoggedIn}");
-
-    // Kiểm tra cả 2 nguồn để đảm bảo
-    final user = currentUser ?? AuthService.currentUser;
-
-    if (user == null) {
-      print("❌ Chưa đăng nhập → chuyển sang LoginScreen");
-      Navigator.pushNamed(context, '/login');
-    } else {
-      print("✅ Đã đăng nhập → chuyển sang TopupScreen");
-      print("   User: ${user.username} - Balance: ${user.balance}");
-      Navigator.pushNamed(context, '/topup');
     }
   }
 
@@ -151,115 +69,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     right: 16,
                     child: GestureDetector(
                       onTap: () {
-                        if (AuthService.isLoggedIn) {
-                          // Đã đăng nhập → hiển thị dialog thông tin user
-                          showModalBottomSheet(
-                            context: context,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                            ),
-                            builder: (context) => Container(
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Avatar
-                                  Container(
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      color: Colors.purple.shade100,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: Colors.purple,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  // Username
-                                  Text(
-                                    AuthService.currentUser?.username ?? 'User',
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Email
-                                  Text(
-                                    AuthService.currentUser?.email ?? '',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  // Số dư
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.shade50,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      'Số dư: ${AuthService.currentUser?.balance?.toStringAsFixed(0) ?? '0'} VNĐ',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green.shade700,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  // Nút đăng xuất
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton.icon(
-                                      onPressed: () async {
-                                        await ApiService.logout(); // logout chuẩn
-                                        if (context.mounted) {
-                                          Navigator.pop(context);
-                                          Navigator.pushReplacementNamed(context, '/home');
-                                        }
-                                      },
-                                      icon: const Icon(Icons.logout),
-                                      label: const Text('Đăng xuất'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.red,
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        } else {
-                          // Chưa đăng nhập → chuyển sang LoginScreen
-                          Navigator.pushNamed(context, '/login');
-                        }
+                        Navigator.pushNamed(context, '/login');
                       },
                       child: Container(
-                        width: 45,
-                        height: 45,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
-                          border: Border.all(color: Colors.white, width: 2),
-                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Icon(
-                          AuthService.isLoggedIn ? Icons.person : Icons.person_outline,
-                          color: Colors.white,
-                          size: 26,
+                        child: const Text(
+                          "Đăng nhập",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -318,11 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  _menuItem(
-                    Icons.account_balance_wallet,
-                    "Nạp tiền",
-                    onTap: _handleTopup, // ✅ SỬ DỤNG HÀM ĐÃ FIX
-                  ),
+                  _menuItem(Icons.account_balance_wallet, "Nạp tiền"),
                   _menuItem(Icons.confirmation_num, "Mua vé tháng"),
                   _menuItem(Icons.link, "Liên kết\nngân hàng", isNew: true),
                   _menuItem(Icons.directions_car, "Quản lý xe"),
@@ -423,7 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     for (var s in _services)
                       _serviceCard(
                         title: s['title'] ?? 'Chưa có tên',
-                        desc: s['description'] ?? 'Không có mô tả',
+                        desc: s['desc'] ?? 'Không có mô tả',
                         color: Colors.teal,
                         icon: Icons.workspace_premium_rounded,
                       ),
@@ -453,42 +275,40 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _menuItem(IconData icon, String title, {bool isNew = false, VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Icon(icon, size: 36, color: Colors.black87),
-              if (isNew)
-                Positioned(
-                  right: -6,
-                  top: -6,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      "Mới",
-                      style: TextStyle(color: Colors.white, fontSize: 10),
-                    ),
+  static Widget _menuItem(IconData icon, String title, {bool isNew = false}) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(icon, size: 36, color: Colors.black87),
+            if (isNew)
+              Positioned(
+                right: -6,
+                top: -6,
+                child: Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    "Mới",
+                    style: TextStyle(color: Colors.white, fontSize: 10),
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+      ],
     );
   }
 
@@ -595,6 +415,7 @@ class _SmartTollCarPainter extends CustomPainter {
     final dx = (size.width - scaledWidth) / 2;
     final dy = (size.height - scaledHeight) / 2;
 
+    // --- Thân xe ---
     final bodyPaint = Paint()
       ..shader = const LinearGradient(
         colors: [Color(0xFF0066FF), Color(0xFF00CCFF)],
@@ -617,12 +438,14 @@ class _SmartTollCarPainter extends CustomPainter {
 
     canvas.drawPath(bodyPath, bodyPaint);
 
+    // --- Viền xe ---
     final borderPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.5;
     canvas.drawPath(bodyPath, borderPaint);
 
+    // --- Cửa sổ ---
     final windowPaint = Paint()
       ..shader = const LinearGradient(
         colors: [Colors.white, Colors.lightBlueAccent],
@@ -639,6 +462,7 @@ class _SmartTollCarPainter extends CustomPainter {
       ..close();
     canvas.drawPath(windowPath, windowPaint);
 
+    // --- Bánh xe ---
     final wheelPaint = Paint()..color = Colors.black;
     final rimPaint = Paint()
       ..color = Colors.cyanAccent
@@ -664,14 +488,16 @@ class _SmartTollCarPainter extends CustomPainter {
         wheelRadius,
         rimPaint);
 
+    // --- Đèn xe ---
     final lightPaint = Paint()..color = Colors.yellowAccent;
     canvas.drawCircle(
         Offset(dx + scaledWidth * 0.94, dy + scaledHeight * 0.58), 7, lightPaint);
 
+    // --- Chữ SmartToll rõ nét ---
     final textPainter = TextPainter(
-      text: const TextSpan(
+      text: TextSpan(
         text: "SmartToll",
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
           color: Colors.white,
