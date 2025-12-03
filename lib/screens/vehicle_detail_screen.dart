@@ -28,8 +28,7 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
   bool isVehicleActive() =>
       (vehicle["vehicleStatus"] ?? "INACTIVE") == "ACTIVE";
 
-  bool isTagActive() =>
-      (vehicle["tagStatus"] ?? "INACTIVE") == "ACTIVE";
+  bool isTagActive() => (vehicle["tagStatus"] ?? "INACTIVE") == "ACTIVE";
 
   // ============================ API: Toggle TAG ============================
   Future<void> toggleTagStatus() async {
@@ -37,7 +36,9 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
 
     if (!isVehicleActive()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Không thể bật E-Tag khi phương tiện đang INACTIVE.")),
+        const SnackBar(
+          content: Text("Không thể bật E-Tag khi phương tiện đang INACTIVE."),
+        ),
       );
       return;
     }
@@ -56,9 +57,9 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi đổi trạng thái E-Tag: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi đổi trạng thái E-Tag: $e")));
     } finally {
       setState(() => loading = false);
     }
@@ -151,7 +152,6 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 // =================== BIỂN SỐ + LOẠI XE ===================
                 Center(
                   child: Column(
@@ -167,7 +167,9 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 6),
+                          horizontal: 18,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [primaryColor, secondaryColor],
@@ -192,22 +194,31 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                 const SizedBox(height: 18),
 
                 // ========================= E-TAG UID =========================
-                _infoRow(Icons.nfc_rounded, "E-Tag UID",
-                    vehicle["tagUid"] ?? "-"),
+                _infoRow(
+                  Icons.nfc_rounded,
+                  "E-Tag UID",
+                  vehicle["tagUid"] ?? "-",
+                  valueColor: isTagActive() ? Colors.black87 : Colors.red,
+                ),
 
                 const SizedBox(height: 16),
 
                 // ==================== TRẠNG THÁI PHƯƠNG TIỆN ====================
                 Row(
                   children: [
-                    Icon(Icons.power_settings_new_rounded,
-                        color: primaryColor, size: 26),
+                    Icon(
+                      Icons.power_settings_new_rounded,
+                      color: primaryColor,
+                      size: 26,
+                    ),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Text(
                         "Trạng thái phương tiện",
                         style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                     Switch(
@@ -216,7 +227,9 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                       activeTrackColor: secondaryColor,
                       inactiveThumbColor: Colors.grey.shade200,
                       inactiveTrackColor: Colors.grey.shade400,
-                      onChanged: loading ? null : (_) => toggleVehicleStatus(),
+                      onChanged: loading
+                          ? null
+                          : (_) => toggleVehicleStatus(),
                     ),
                   ],
                 ),
@@ -226,14 +239,19 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                 // ======================== TRẠNG THÁI E-TAG =========================
                 Row(
                   children: [
-                    Icon(Icons.credit_card_rounded,
-                        color: primaryColor, size: 26),
+                    Icon(
+                      Icons.credit_card_rounded,
+                      color: primaryColor,
+                      size: 26,
+                    ),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: Text(
                         "Trạng thái E-Tag",
                         style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                     Switch(
@@ -281,7 +299,6 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                     ),
                   ),
                 ),
-
               ],
             ),
           ),
@@ -290,7 +307,12 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value) {
+  Widget _infoRow(
+      IconData icon,
+      String label,
+      String value, {
+        Color valueColor = Colors.black87,
+      }) {
     return Row(
       children: [
         Icon(icon, color: primaryColor, size: 26),
@@ -298,8 +320,7 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, fontSize: 16),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
           ),
         ),
         Text(
@@ -310,4 +331,3 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
     );
   }
 }
-

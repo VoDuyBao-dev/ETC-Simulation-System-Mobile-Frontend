@@ -39,6 +39,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
 
   Widget buildVehicleCard(Map v) {
     final bool isActive = (v["vehicleStatus"] ?? "INACTIVE") == "ACTIVE";
+    final bool isTagActive = (v["tagStatus"] ?? "INACTIVE") == "ACTIVE";
 
     // ---- Lấy loại xe ----
     final String type = (v["vehicleType"] ?? "CAR").toUpperCase();
@@ -92,7 +93,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
                 const SizedBox(height: 4),
                 Text(
                   "E-Tag: ${v["tagUid"] ?? "-"}",
-                  style: const TextStyle(color: Colors.black54),
+                  style: TextStyle(color: isTagActive ? Colors.black54 : Colors.redAccent),
                 ),
                 const SizedBox(height: 2),
                 Text(

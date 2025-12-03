@@ -79,7 +79,7 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
 
                 _menuItem(Icons.card_giftcard_rounded, "Khuyến mãi", "Ưu đãi hấp dẫn"),
                 _menuItem(Icons.support_agent_rounded, "Hỗ trợ", "Chat nhân viên"),
-                _menuItem(Icons.qr_code_scanner_rounded, "Quét mã trạm", "Dễ dàng qua trạm"),
+                // _menuItem(Icons.qr_code_scanner_rounded, "Quét mã trạm", "Dễ dàng qua trạm"),
                 _menuItem(Icons.map_rounded, "Bản đồ trạm", "Xem vị trí gần nhất"),
 
               ],
